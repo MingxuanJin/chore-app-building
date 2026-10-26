@@ -8,6 +8,7 @@ import { useLiveQuery } from "@/lib/supabase/realtime";
 import { NOTIFICATION_ICON, notificationHref, notificationSubject, notificationText } from "@/lib/notifications";
 import type { AppNotification } from "@/types/database";
 import { useFamily } from "./family-provider";
+import { useI18n } from "./i18n-provider";
 
 interface NotificationsCtx {
   notifications: AppNotification[];
@@ -21,6 +22,7 @@ const Ctx = createContext<NotificationsCtx | null>(null);
 
 export function NotificationsProvider({ children }: { children: React.ReactNode }) {
   const { me, nameOf } = useFamily();
+  const { t } = useI18n();
 
   const fetchNotifications = useCallback(async () => {
     const { data } = await createClient()
@@ -73,9 +75,9 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
               className="flex min-w-0 flex-1 items-center gap-3 text-sm"
             >
               <ToastIcon type={toast.type} />
-              <span className="min-w-0 flex-1">{notificationText(toast, nameOf(notificationSubject(toast)))}</span>
+              <span className="min-w-0 flex-1">{notificationText(t, toast, nameOf(notificationSubject(toast)))}</span>
             </Link>
-            <button onClick={() => setDismissed(toast.id)} className="p-1 text-muted-foreground" aria-label="关闭">
+            <button onClick={() => setDismissed(toast.id)} className="p-1 text-muted-foreground" aria-label={t("common.close")}>
               <X className="h-4 w-4" />
             </button>
           </div>

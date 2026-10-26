@@ -9,10 +9,12 @@ import { usePoints } from "@/components/use-points";
 import { useTasks } from "@/components/tasks/use-tasks";
 import { TaskCard } from "@/components/tasks/task-card";
 import { todayISO } from "@/lib/tasks";
+import { useI18n } from "@/components/i18n-provider";
 import type { Task } from "@/types/database";
 
 export default function DashboardPage() {
   const { me, partner } = useFamily();
+  const { t } = useI18n();
   const { tasks, loading } = useTasks(10);
   const { points } = usePoints();
   const today = todayISO();
@@ -28,34 +30,34 @@ export default function DashboardPage() {
   return (
     <div className="flex flex-col gap-5">
       <div>
-        <h1 className="text-2xl font-bold">你好，{me.name || "我"} 👋</h1>
+        <h1 className="text-2xl font-bold">{me.name ? t("dashboard.hello", { name: me.name }) : t("setup.helloNoName")}</h1>
         <p className="text-sm text-muted-foreground">
-          {mine.length + open.length === 0 ? "今天的家务都搞定了！" : `今天还有 ${mine.length + open.length} 件事要做`}
+          {mine.length + open.length === 0 ? t("dashboard.allDone") : t("dashboard.remaining", { n: mine.length + open.length })}
         </p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <PointsCard label="我的积分" value={points[me.id]?.balance ?? 0} highlight />
-        <PointsCard label={`${partner?.name || "TA"}的积分`} value={partner ? (points[partner.id]?.balance ?? 0) : "—"} />
+        <PointsCard label={t("dashboard.myPoints")} value={points[me.id]?.balance ?? 0} highlight />
+        <PointsCard label={t("dashboard.partnerPoints", { name: partner?.name || t("common.partner") })} value={partner ? (points[partner.id]?.balance ?? 0) : "—"} />
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <Link href="/tasks/new" className={buttonVariants({ variant: "outline" })}>
-          <Plus /> 新建任务
+          <Plus /> {t("dashboard.newTask")}
         </Link>
         <Link href="/shopping" className={buttonVariants({ variant: "outline" })}>
-          <ShoppingCart /> 购物清单
+          <ShoppingCart /> {t("dashboard.shoppingList")}
         </Link>
       </div>
 
       {loading ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">加载中…</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : (
         <>
-          <Section title="等我确认" tasks={toReview} accent />
-          <Section title="我的今日待办" tasks={mine} empty="没有待办，去认领一个吧" />
-          <Section title="待认领" tasks={open} />
-          <Section title="今天已完成" tasks={doneToday} />
+          <Section title={t("dashboard.toReview")} tasks={toReview} accent />
+          <Section title={t("dashboard.myToday")} tasks={mine} empty={t("dashboard.noTodo")} />
+          <Section title={t("dashboard.open")} tasks={open} />
+          <Section title={t("dashboard.doneToday")} tasks={doneToday} />
         </>
       )}
     </div>
@@ -74,6 +76,7 @@ function PointsCard({ label, value, highlight }: { label: string; value: number 
 }
 
 function Section({ title, tasks, empty, accent }: { title: string; tasks: Task[]; empty?: string; accent?: boolean }) {
+  const { t } = useI18n();
   if (tasks.length === 0 && !empty) return null;
   return (
     <section className="flex flex-col gap-2">
@@ -82,7 +85,7 @@ function Section({ title, tasks, empty, accent }: { title: string; tasks: Task[]
           {title} {tasks.length > 0 && `(${tasks.length})`}
         </h2>
         <Link href="/tasks" className="flex items-center text-xs text-muted-foreground">
-          全部 <ChevronRight className="h-3 w-3" />
+          {t("common.all")} <ChevronRight className="h-3 w-3" />
         </Link>
       </div>
       {tasks.length === 0 ? (

@@ -12,11 +12,14 @@ import { Input, Select } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useFamily } from "@/components/family-provider";
 import { usePoints } from "@/components/use-points";
+import { useI18n } from "@/components/i18n-provider";
+import { translateError } from "@/lib/i18n/errors";
 
 type Tab = "redeem" | "milestone";
 
 export default function RewardsPage() {
   const { me, partner, family, nameOf } = useFamily();
+  const { t, dateLocale } = useI18n();
   const { points } = usePoints();
   const [tab, setTab] = useState<Tab>("redeem");
   const [showForm, setShowForm] = useState(false);
@@ -51,7 +54,7 @@ export default function RewardsPage() {
 
   const balance = points[me.id]?.balance ?? 0;
   const rewardOf = (id: string) => rewards.find((r) => r.id === id);
-  const rewardName = (id: string) => rewardOf(id)?.name ?? "（已删除的奖励）";
+  const rewardName = (id: string) => rewardOf(id)?.name ?? t("rewards.deletedReward");
 
   async function addReward(e: React.FormEvent) {
     e.preventDefault();
@@ -64,24 +67,24 @@ export default function RewardsPage() {
           ? { ...base, reward_type: "redeem", cost_points: Number(cost) }
           : { ...base, reward_type: "milestone", milestone_condition: { type: mType, target: Number(mTarget) } }
       );
-    if (error) return setError(error.message);
+    if (error) return setError(translateError(t, error.message));
     setName("");
     setShowForm(false);
     load();
   }
 
   async function redeem(reward: Reward) {
-    if (!confirm(`花 ${reward.cost_points} 分兑换「${reward.name}」？`)) return;
+    if (!confirm(t("rewards.confirmRedeem", { cost: reward.cost_points ?? 0, reward: reward.name }))) return;
     setBusy(reward.id);
     setError(null);
     const { error } = await createClient().rpc("redeem_reward", { p_reward_id: reward.id });
-    if (error) setError(error.message);
+    if (error) setError(translateError(t, error.message));
     setBusy(null);
     load();
   }
 
   async function archive(reward: Reward) {
-    if (!confirm(`删除奖励「${reward.name}」？`)) return;
+    if (!confirm(t("rewards.confirmDelete", { reward: reward.name }))) return;
     // soft delete keeps redemption history readable
     await createClient().from("rewards").update({ is_active: false }).eq("id", reward.id);
     load();
@@ -100,29 +103,32 @@ export default function RewardsPage() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">奖励</h1>
+        <h1 className="text-xl font-bold">{t("rewards.title")}</h1>
         <Button size="sm" onClick={() => setShowForm((v) => !v)}>
-          <Plus /> 新奖励
+          <Plus /> {t("rewards.newReward")}
         </Button>
       </div>
 
       <Card className="bg-primary text-primary-foreground">
         <CardContent className="flex items-center justify-between pt-4">
-          <span>我的积分</span>
+          <span>{t("rewards.myPoints")}</span>
           <span className="text-3xl font-bold tabular-nums">{balance}</span>
         </CardContent>
       </Card>
 
       {owedByMe.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-orange-600">待我履行</h2>
+          <h2 className="text-sm font-semibold text-orange-600">{t("rewards.owedByMe")}</h2>
           {owedByMe.map((r) => (
             <div key={r.id} className="flex items-center gap-2 rounded-lg border border-orange-500/40 bg-orange-500/5 p-3 text-sm">
               <span className="flex-1">
-                {nameOf(r.user_id)} {r.period_key ? "解锁了" : "兑换了"}「{rewardName(r.reward_id)}」
+                {t(r.period_key ? "rewards.unlockedThing" : "rewards.redeemedThing", {
+                  name: nameOf(r.user_id),
+                  reward: rewardName(r.reward_id),
+                })}
               </span>
               <Button size="sm" variant="outline" onClick={() => fulfill(r)}>
-                <Check /> 已履行
+                <Check /> {t("rewards.markFulfilled")}
               </Button>
             </div>
           ))}
@@ -132,8 +138,8 @@ export default function RewardsPage() {
       <div className="grid grid-cols-2 rounded-md bg-muted p-1">
         {(
           [
-            ["redeem", "积分兑换"],
-            ["milestone", "里程碑"],
+            ["redeem", "rewards.tabRedeem"],
+            ["milestone", "rewards.tabMilestone"],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -144,7 +150,7 @@ export default function RewardsPage() {
               tab === key ? "bg-background shadow-sm" : "text-muted-foreground"
             )}
           >
-            {label}
+            {t(label)}
           </button>
         ))}
       </div>
@@ -152,16 +158,16 @@ export default function RewardsPage() {
       {showForm && (
         <form onSubmit={addReward} className="flex flex-col gap-2 rounded-lg border p-3">
           <Input
-            placeholder={tab === "redeem" ? "如：对方做一顿饭" : "达成后的奖励，如：周末大餐"}
+            placeholder={t(tab === "redeem" ? "rewards.redeemPlaceholder" : "rewards.milestonePlaceholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
             required
           />
           {tab === "redeem" ? (
             <div className="flex items-center gap-2 text-sm">
-              需要
+              {t("rewards.needs")}
               <Input type="number" min={1} value={cost} onChange={(e) => setCost(e.target.value)} className="w-24" required />
-              积分
+              {t("rewards.pointsWord")}
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm">
@@ -175,7 +181,7 @@ export default function RewardsPage() {
               >
                 {MILESTONE_TYPES.map((m) => (
                   <option key={m.type} value={m.type}>
-                    {m.label}
+                    {t(m.label)}
                   </option>
                 ))}
               </Select>
@@ -188,17 +194,17 @@ export default function RewardsPage() {
                 className="w-24"
                 required
               />
-              <span className="shrink-0">{MILESTONE_TYPES.find((m) => m.type === mType)?.unit}</span>
+              <span className="shrink-0">{t(MILESTONE_TYPES.find((m) => m.type === mType)!.unit)}</span>
             </div>
           )}
-          <Button type="submit">添加{tab === "redeem" ? "兑换奖励" : "里程碑"}</Button>
+          <Button type="submit">{t(tab === "redeem" ? "rewards.addRedeem" : "rewards.addMilestone")}</Button>
         </form>
       )}
       {error && <p className="text-sm text-destructive">{error}</p>}
 
       {tab === "redeem" && (
         <div className="flex flex-col gap-2">
-          {shop.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">还没有奖励，添加一个吧 🎁</p>}
+          {shop.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t("rewards.emptyShop")}</p>}
           {shop.map((r) => {
             const affordable = balance >= (r.cost_points ?? 0);
             return (
@@ -207,13 +213,13 @@ export default function RewardsPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{r.name}</p>
                   <p className="text-xs text-muted-foreground">
-                    {r.cost_points} 分 · {nameOf(r.created_by)}添加
+                    {t("rewards.costLine", { cost: r.cost_points ?? 0, name: nameOf(r.created_by) })}
                   </p>
                 </div>
                 <Button size="sm" disabled={!affordable || busy === r.id} onClick={() => redeem(r)}>
-                  兑换
+                  {t("rewards.redeem")}
                 </Button>
-                <Button size="icon" variant="ghost" onClick={() => archive(r)} aria-label="删除">
+                <Button size="icon" variant="ghost" onClick={() => archive(r)} aria-label={t("common.delete")}>
                   <Trash2 />
                 </Button>
               </div>
@@ -225,7 +231,7 @@ export default function RewardsPage() {
       {tab === "milestone" && (
         <div className="flex flex-col gap-2">
           {milestones.length === 0 && (
-            <p className="py-6 text-center text-sm text-muted-foreground">还没有里程碑，设一个共同目标吧 🏆</p>
+            <p className="py-6 text-center text-sm text-muted-foreground">{t("rewards.emptyMilestones")}</p>
           )}
           {milestones.map((r) => {
             const cond = r.milestone_condition!;
@@ -236,10 +242,10 @@ export default function RewardsPage() {
                   <Trophy className="h-5 w-5 text-warning" />
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{r.name}</p>
-                    <p className="text-xs text-muted-foreground">{describeMilestone(cond)}</p>
+                    <p className="text-xs text-muted-foreground">{describeMilestone(t, cond)}</p>
                   </div>
-                  {unlocks.length > 0 && <span className="text-xs text-muted-foreground">已解锁 {unlocks.length} 次</span>}
-                  <Button size="icon" variant="ghost" onClick={() => archive(r)} aria-label="删除">
+                  {unlocks.length > 0 && <span className="text-xs text-muted-foreground">{t("rewards.unlockedTimes", { n: unlocks.length })}</span>}
+                  <Button size="icon" variant="ghost" onClick={() => archive(r)} aria-label={t("common.delete")}>
                     <Trash2 />
                   </Button>
                 </div>
@@ -251,7 +257,7 @@ export default function RewardsPage() {
                     <div key={p.id} className="flex flex-col gap-1">
                       <div className="flex justify-between text-xs">
                         <span>{nameOf(p.id)}</span>
-                        <span className="text-muted-foreground">{progressLabel(cond, value)}</span>
+                        <span className="text-muted-foreground">{progressLabel(t, cond, value)}</span>
                       </div>
                       <div className="h-2 overflow-hidden rounded-full bg-muted">
                         <div
@@ -270,26 +276,27 @@ export default function RewardsPage() {
 
       {redemptions.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-muted-foreground">兑换与解锁记录</h2>
+          <h2 className="text-sm font-semibold text-muted-foreground">{t("rewards.history")}</h2>
           <ul className="flex flex-col gap-1 text-sm">
             {redemptions.map((r) => (
               <li key={r.id} className="flex justify-between gap-2 rounded-md bg-muted/50 px-3 py-2">
                 <span>
                   {r.period_key ? (
                     <>
-                      🏆 {nameOf(r.user_id)} 解锁「{rewardName(r.reward_id)}」
-                      {periodLabel(r.period_key) && (
-                        <span className="text-muted-foreground"> · {periodLabel(r.period_key)}</span>
+                      {t("rewards.historyUnlock", { name: nameOf(r.user_id), reward: rewardName(r.reward_id) })}
+                      {periodLabel(t, dateLocale, r.period_key) && (
+                        <span className="text-muted-foreground"> · {periodLabel(t, dateLocale, r.period_key)}</span>
                       )}
                     </>
                   ) : (
                     <>
-                      {nameOf(r.user_id)} 兑换「{rewardName(r.reward_id)}」 −{r.points_spent}
+                      {t("rewards.historyRedeem", { name: nameOf(r.user_id), reward: rewardName(r.reward_id), points: r.points_spent })}
                     </>
                   )}
                 </span>
                 <span className="shrink-0 text-xs text-muted-foreground">
-                  {r.is_fulfilled ? "✅ 已履行" : "待履行"} · {new Date(r.created_at).toLocaleDateString("zh-CN")}
+                  {r.is_fulfilled ? t("rewards.statusFulfilled") : t("rewards.statusPending")} ·{" "}
+                  {new Date(r.created_at).toLocaleDateString(dateLocale)}
                 </span>
               </li>
             ))}

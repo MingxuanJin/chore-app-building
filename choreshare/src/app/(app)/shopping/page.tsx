@@ -9,9 +9,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useFamily } from "@/components/family-provider";
+import { useI18n } from "@/components/i18n-provider";
 
 export default function ShoppingPage() {
   const { me, partner, family, nameOf } = useFamily();
+  const { t } = useI18n();
   const [name, setName] = useState("");
   const [showPurchased, setShowPurchased] = useState(false);
 
@@ -70,7 +72,7 @@ export default function ShoppingPage() {
   }
 
   async function clearPurchased() {
-    if (!confirm("清空所有已购项目？")) return;
+    if (!confirm(t("shopping.confirmClear"))) return;
     await createClient().from("shopping_items").delete().eq("is_purchased", true).eq("family_id", family.id);
     load();
   }
@@ -82,17 +84,17 @@ export default function ShoppingPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">购物清单</h1>
+      <h1 className="text-xl font-bold">{t("shopping.title")}</h1>
 
       <form onSubmit={add} className="flex gap-2">
-        <Input placeholder="要买什么？" value={name} onChange={(e) => setName(e.target.value)} />
-        <Button type="submit" size="icon" className="h-10 w-10 shrink-0" aria-label="添加">
+        <Input placeholder={t("shopping.placeholder")} value={name} onChange={(e) => setName(e.target.value)} />
+        <Button type="submit" size="icon" className="h-10 w-10 shrink-0" aria-label={t("common.add")}>
           <Plus />
         </Button>
       </form>
 
       <ul className="flex flex-col gap-2">
-        {todo.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">清单是空的 🛒</p>}
+        {todo.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t("shopping.empty")}</p>}
         {todo.map((item) => (
           <Row key={item.id} item={item} onToggle={() => togglePurchased(item)} onRemove={() => remove(item.id)}>
             <button
@@ -103,7 +105,7 @@ export default function ShoppingPage() {
               )}
             >
               <UserRound className="h-3 w-3" />
-              {item.assigned_to ? `${nameOf(item.assigned_to)}去买` : "谁去买？"}
+              {item.assigned_to ? t("shopping.buyer", { name: nameOf(item.assigned_to) }) : t("shopping.whoBuys")}
             </button>
           </Row>
         ))}
@@ -113,11 +115,11 @@ export default function ShoppingPage() {
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
             <button className="text-sm font-semibold text-muted-foreground" onClick={() => setShowPurchased((v) => !v)}>
-              已购 ({done.length}) {showPurchased ? "▾" : "▸"}
+              {t("shopping.purchased", { n: done.length })} {showPurchased ? "▾" : "▸"}
             </button>
             {showPurchased && (
               <Button size="sm" variant="ghost" onClick={clearPurchased}>
-                清空已购
+                {t("shopping.clearPurchased")}
               </Button>
             )}
           </div>
@@ -125,7 +127,7 @@ export default function ShoppingPage() {
             <ul className="flex flex-col gap-2 opacity-60">
               {done.map((item) => (
                 <Row key={item.id} item={item} onToggle={() => togglePurchased(item)} onRemove={() => remove(item.id)}>
-                  <span className="text-xs text-muted-foreground">{nameOf(item.purchased_by)}买了</span>
+                  <span className="text-xs text-muted-foreground">{t("shopping.boughtBy", { name: nameOf(item.purchased_by) })}</span>
                 </Row>
               ))}
             </ul>
@@ -148,11 +150,12 @@ function Row({
   children: React.ReactNode;
 }) {
   const { nameOf } = useFamily();
+  const { t } = useI18n();
   return (
     <li className="flex items-center gap-3 rounded-lg border bg-card p-3">
       <button
         onClick={onToggle}
-        aria-label={item.is_purchased ? "标记为待购" : "标记为已购"}
+        aria-label={item.is_purchased ? t("shopping.markTodo") : t("shopping.markPurchased")}
         className={cn(
           "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2",
           item.is_purchased ? "border-success bg-success text-white" : "border-muted-foreground/40"
@@ -162,10 +165,10 @@ function Row({
       </button>
       <div className="min-w-0 flex-1">
         <p className={cn("truncate", item.is_purchased && "line-through")}>{item.name}</p>
-        <p className="text-xs text-muted-foreground">{nameOf(item.added_by)}添加</p>
+        <p className="text-xs text-muted-foreground">{t("shopping.addedBy", { name: nameOf(item.added_by) })}</p>
       </div>
       {children}
-      <button onClick={onRemove} className="p-1 text-muted-foreground hover:text-destructive" aria-label="删除">
+      <button onClick={onRemove} className="p-1 text-muted-foreground hover:text-destructive" aria-label={t("common.delete")}>
         <Trash2 className="h-4 w-4" />
       </button>
     </li>

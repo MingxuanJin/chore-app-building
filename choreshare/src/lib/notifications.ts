@@ -1,20 +1,6 @@
 import { Check, CircleAlert, Gift, Hand, ListTodo, PartyPopper, ShoppingCart, Trophy, UserPlus } from "lucide-react";
 import type { AppNotification, NotificationType } from "@/types/database";
-
-// Rendered client-side from structured data so each reader can get their own language.
-type Render = (n: AppNotification, actor: string) => string;
-
-const TEXT: Record<NotificationType, Render> = {
-  task_assigned: (n, a) => `${a}把「${n.data.title}」分配给了你`,
-  task_claimed: (n, a) => `${a}认领了「${n.data.title}」`,
-  task_submitted: (n, a) => `${a}完成了「${n.data.title}」，等你确认`,
-  task_approved: (n, a) => `${a}确认了「${n.data.title}」，你获得 ${n.data.points ?? 0} 分 🎉`,
-  task_rejected: (n, a) => `${a}驳回了「${n.data.title}」${n.data.comment ? `：“${n.data.comment}”` : ""}`,
-  reward_redeemed: (n, a) => `${a}兑换了「${n.data.name}」，等你履行`,
-  milestone_unlocked: (n, a) => `${a}解锁了里程碑「${n.data.name}」，等你履行`,
-  reward_fulfilled: (n, a) => `${a}兑现了你的「${n.data.name}」💝`,
-  shopping_assigned: (n, a) => `${a}请你去买「${n.data.name}」`,
-};
+import type { TFunction } from "@/lib/i18n/translate";
 
 export const NOTIFICATION_ICON: Record<NotificationType, React.ElementType> = {
   task_assigned: UserPlus,
@@ -33,8 +19,16 @@ export function notificationSubject(n: AppNotification): string | null {
   return n.data.user ?? n.actor_id;
 }
 
-export function notificationText(n: AppNotification, subjectName: string): string {
-  return TEXT[n.type]?.(n, subjectName) ?? "";
+// Rendered client-side from structured data so each reader gets their own language.
+export function notificationText(t: TFunction, n: AppNotification, subjectName: string): string {
+  const params = {
+    name: subjectName,
+    title: n.data.title ?? n.data.name ?? "",
+    points: n.data.points ?? 0,
+    comment: n.data.comment ?? "",
+  };
+  if (n.type === "task_rejected" && n.data.comment) return t("notifications.task_rejected_comment", params);
+  return t(`notifications.${n.type}`, params);
 }
 
 export function notificationHref(n: AppNotification): string {
@@ -44,11 +38,11 @@ export function notificationHref(n: AppNotification): string {
   return "/dashboard";
 }
 
-export function timeAgo(iso: string): string {
+export function timeAgo(t: TFunction, dateLocale: string, iso: string): string {
   const s = Math.floor((Date.now() - new Date(iso).getTime()) / 1000);
-  if (s < 60) return "刚刚";
-  if (s < 3600) return `${Math.floor(s / 60)} 分钟前`;
-  if (s < 86400) return `${Math.floor(s / 3600)} 小时前`;
-  if (s < 86400 * 7) return `${Math.floor(s / 86400)} 天前`;
-  return new Date(iso).toLocaleDateString("zh-CN");
+  if (s < 60) return t("time.justNow");
+  if (s < 3600) return t("time.minutesAgo", { n: Math.floor(s / 60) });
+  if (s < 86400) return t("time.hoursAgo", { n: Math.floor(s / 3600) });
+  if (s < 86400 * 7) return t("time.daysAgo", { n: Math.floor(s / 86400) });
+  return new Date(iso).toLocaleDateString(dateLocale);
 }

@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { TaskForm } from "@/components/tasks/task-form";
+import { PageTitle } from "@/components/page-title";
 import type { Task } from "@/types/database";
 
 export default async function EditTaskPage({ params }: { params: Promise<{ id: string }> }) {
@@ -11,7 +12,7 @@ export default async function EditTaskPage({ params }: { params: Promise<{ id: s
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">编辑任务</h1>
+      <PageTitle k="taskForm.editTitle" />
       <TaskForm task={task} />
     </div>
   );

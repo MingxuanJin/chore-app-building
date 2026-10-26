@@ -31,6 +31,7 @@ export interface Profile {
   name: string;
   avatar_url: string | null;
   family_id: string | null;
+  locale: "zh" | "en" | "it" | null;
   created_at: string;
 }
 

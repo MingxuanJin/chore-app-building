@@ -4,11 +4,12 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import type { RecurrenceType, RecurrenceValue, Task } from "@/types/database";
-import { WEEKDAYS, todayISO } from "@/lib/tasks";
+import { todayISO, weekdays } from "@/lib/tasks";
 import { Button } from "@/components/ui/button";
 import { Input, Label, Select, Textarea } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useFamily } from "@/components/family-provider";
+import { useI18n } from "@/components/i18n-provider";
 import { DifficultyPicker } from "./difficulty";
 
 type AssignMode = "open" | "me" | "partner";
@@ -16,6 +17,7 @@ type AssignMode = "open" | "me" | "partner";
 export function TaskForm({ task }: { task?: Task }) {
   const router = useRouter();
   const { me, partner, family } = useFamily();
+  const { t } = useI18n();
 
   const [title, setTitle] = useState(task?.title ?? "");
   const [description, setDescription] = useState(task?.description ?? "");
@@ -76,51 +78,51 @@ export function TaskForm({ task }: { task?: Task }) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       <div className="flex flex-col gap-2">
-        <Label htmlFor="title">任务名称</Label>
-        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="如：拖地、洗碗" required />
+        <Label htmlFor="title">{t("taskForm.name")}</Label>
+        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} placeholder={t("taskForm.namePlaceholder")} required />
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="desc">描述（可选）</Label>
+        <Label htmlFor="desc">{t("taskForm.description")}</Label>
         <Textarea id="desc" value={description} onChange={(e) => setDescription(e.target.value)} />
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label>难度</Label>
+        <Label>{t("taskForm.difficulty")}</Label>
         <DifficultyPicker value={difficulty} onChange={setDifficulty} />
-        <p className="text-xs text-muted-foreground">积分 = 难度 × 每 15 分钟</p>
+        <p className="text-xs text-muted-foreground">{t("taskForm.pointsHint")}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
         <div className="flex flex-col gap-2">
-          <Label htmlFor="est">预估时长（分钟）</Label>
+          <Label htmlFor="est">{t("taskForm.estimated")}</Label>
           <Input id="est" type="number" min={1} value={estimated} onChange={(e) => setEstimated(e.target.value)} />
         </div>
         <div className="flex flex-col gap-2">
-          <Label htmlFor="due">日期</Label>
+          <Label htmlFor="due">{t("taskForm.date")}</Label>
           <Input id="due" type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} />
         </div>
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label htmlFor="rec">重复</Label>
+        <Label htmlFor="rec">{t("taskForm.repeat")}</Label>
         <Select id="rec" value={recurrence} onChange={(e) => setRecurrence(e.target.value as RecurrenceType)}>
-          <option value="none">不重复</option>
-          <option value="daily">每天</option>
-          <option value="every_n_days">每 N 天</option>
-          <option value="weekly">每周指定几天</option>
-          <option value="monthly">每月指定日期</option>
+          <option value="none">{t("recurrence.none")}</option>
+          <option value="daily">{t("recurrence.daily")}</option>
+          <option value="every_n_days">{t("recurrence.optionEveryN")}</option>
+          <option value="weekly">{t("recurrence.optionWeekly")}</option>
+          <option value="monthly">{t("recurrence.optionMonthly")}</option>
         </Select>
         {recurrence === "every_n_days" && (
           <div className="flex items-center gap-2 text-sm">
-            每
+            {t("recurrence.everyNPrefix")}
             <Input type="number" min={1} max={365} value={intervalDays} onChange={(e) => setIntervalDays(Number(e.target.value))} className="w-20" />
-            天
+            {t("recurrence.everyNSuffix")}
           </div>
         )}
         {recurrence === "weekly" && (
           <div className="flex gap-1">
-            {WEEKDAYS.map((label, i) => (
+            {weekdays(t).map((label, i) => (
               <button
                 key={i}
                 type="button"
@@ -137,21 +139,21 @@ export function TaskForm({ task }: { task?: Task }) {
         )}
         {recurrence === "monthly" && (
           <div className="flex items-center gap-2 text-sm">
-            每月
+            {t("recurrence.monthlyPrefix")}
             <Input type="number" min={1} max={31} value={monthDay} onChange={(e) => setMonthDay(Number(e.target.value))} className="w-20" />
-            日
+            {t("recurrence.monthlySuffix")}
           </div>
         )}
       </div>
 
       <div className="flex flex-col gap-2">
-        <Label>分配给</Label>
+        <Label>{t("taskForm.assignTo")}</Label>
         <div className="grid grid-cols-3 gap-2">
           {(
             [
-              ["open", "待认领"],
-              ["me", "我"],
-              ["partner", partner?.name || "TA"],
+              ["open", t("taskForm.assignOpen")],
+              ["me", t("common.you")],
+              ["partner", partner?.name || t("common.partner")],
             ] as const
           ).map(([mode, label]) => (
             <button
@@ -168,12 +170,12 @@ export function TaskForm({ task }: { task?: Task }) {
             </button>
           ))}
         </div>
-        {!partner && <p className="text-xs text-muted-foreground">对方还没加入，可以在设置页把配对码发给 TA。</p>}
+        {!partner && <p className="text-xs text-muted-foreground">{t("taskForm.partnerNotJoined")}</p>}
       </div>
 
       {error && <p className="text-sm text-destructive">{error}</p>}
       <Button type="submit" size="lg" disabled={saving || (recurrence === "weekly" && days.length === 0)}>
-        {saving ? "保存中…" : task ? "保存修改" : "创建任务"}
+        {saving ? t("common.saving") : task ? t("taskForm.saveChanges") : t("taskForm.create")}
       </Button>
     </form>
   );

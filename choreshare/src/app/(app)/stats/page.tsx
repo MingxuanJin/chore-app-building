@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useFamily } from "@/components/family-provider";
 import { usePoints } from "@/components/use-points";
+import { useI18n } from "@/components/i18n-provider";
 
 type Range = "week" | "month" | "custom";
 
@@ -45,6 +46,7 @@ function toBounds(from: string, to: string) {
 
 export default function StatsPage() {
   const { me, partner } = useFamily();
+  const { t, dateLocale } = useI18n();
   const { points } = usePoints();
   const [range, setRange] = useState<Range>("week");
   const [custom, setCustom] = useState({ from: todayISO(-13), to: todayISO() });
@@ -71,8 +73,8 @@ export default function StatsPage() {
   const dueTasks = data?.dueTasks ?? [];
 
   const people = [
-    { id: me.id, name: me.name || "我", color: "var(--series-me)" },
-    ...(partner ? [{ id: partner.id, name: partner.name || "TA", color: "var(--series-partner)" }] : []),
+    { id: me.id, name: me.name || t("common.you"), color: "var(--series-me)" },
+    ...(partner ? [{ id: partner.id, name: partner.name || t("common.partner"), color: "var(--series-partner)" }] : []),
   ];
 
   const sum = (fn: (id: string) => number) => Object.fromEntries(people.map((p) => [p.id, fn(p.id)]));
@@ -87,7 +89,7 @@ export default function StatsPage() {
     const last = new Date(`${to}T00:00:00`);
     while (d <= last && rows.length < 62) {
       const day = localISO(d);
-      const row: Record<string, string | number> = { day: `${d.getMonth() + 1}/${d.getDate()}` };
+      const row: Record<string, string | number> = { day: d.toLocaleDateString(dateLocale, { month: "numeric", day: "numeric" }) };
       for (const p of people) {
         row[p.id] = reviews.filter((r) => r.earned_by === p.id && localISO(new Date(r.created_at)) === day).length;
       }
@@ -96,18 +98,18 @@ export default function StatsPage() {
     }
     return rows;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [from, to, reviews, me.id, partner?.id]);
+  }, [from, to, reviews, me.id, partner?.id, dateLocale]);
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">统计</h1>
+      <h1 className="text-xl font-bold">{t("stats.title")}</h1>
 
       <div className="flex flex-wrap items-center gap-2">
         {(
           [
-            ["week", "本周"],
-            ["month", "本月"],
-            ["custom", "自定义"],
+            ["week", "stats.week"],
+            ["month", "stats.month"],
+            ["custom", "stats.custom"],
           ] as const
         ).map(([key, label]) => (
           <button
@@ -118,13 +120,13 @@ export default function StatsPage() {
               range === key ? "border-primary bg-primary text-primary-foreground" : "bg-background"
             )}
           >
-            {label}
+            {t(label)}
           </button>
         ))}
         {range === "custom" && (
           <div className="flex w-full items-center gap-2 text-sm">
             <Input type="date" value={custom.from} max={custom.to} onChange={(e) => setCustom((c) => ({ ...c, from: e.target.value }))} />
-            至
+            {t("stats.to")}
             <Input type="date" value={custom.to} min={custom.from} onChange={(e) => setCustom((c) => ({ ...c, to: e.target.value }))} />
           </div>
         )}
@@ -134,19 +136,19 @@ export default function StatsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">分工比例</CardTitle>
-          <p className="text-xs text-muted-foreground">不比输赢，看看是否平衡</p>
+          <CardTitle className="text-base">{t("stats.share")}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t("stats.shareHint")}</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <ShareBar label="完成任务" people={people} values={counts} format={(v) => `${v} 件`} />
-          <ShareBar label="贡献时长" people={people} values={minutes} format={(v) => formatMinutes(v)} />
-          <ShareBar label="获得积分" people={people} values={earned} format={(v) => `${v} 分`} />
+          <ShareBar label={t("stats.tasksDone")} people={people} values={counts} format={(v) => t("stats.tasksUnit", { n: v })} />
+          <ShareBar label={t("stats.timeSpent")} people={people} values={minutes} format={(v) => formatMinutes(t, v)} />
+          <ShareBar label={t("stats.pointsEarned")} people={people} values={earned} format={(v) => t("common.points", { n: v })} />
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">每日完成任务数</CardTitle>
+          <CardTitle className="text-base">{t("stats.dailyChart")}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="h-52">
@@ -158,7 +160,7 @@ export default function StatsPage() {
                 <Tooltip
                   cursor={{ fill: "var(--muted)" }}
                   contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--foreground)" }}
-                  formatter={(value, key) => [`${value} 件`, people.find((p) => p.id === key)?.name ?? ""]}
+                  formatter={(value, key) => [t("stats.tasksUnit", { n: Number(value) }), people.find((p) => p.id === key)?.name ?? ""]}
                 />
                 {people.map((p) => (
                   <Bar key={p.id} dataKey={p.id} fill={p.color} radius={[4, 4, 0, 0]} maxBarSize={18} />
@@ -172,14 +174,14 @@ export default function StatsPage() {
       <div className="grid grid-cols-2 gap-3">
         <Card>
           <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">任务完成率</p>
+            <p className="text-xs text-muted-foreground">{t("stats.completionRate")}</p>
             <p className="text-3xl font-bold tabular-nums">{completionRate === null ? "—" : `${completionRate}%`}</p>
-            <p className="text-xs text-muted-foreground">截至今天到期的 {dueTasks.length} 个任务</p>
+            <p className="text-xs text-muted-foreground">{t("stats.completionHint", { n: dueTasks.length })}</p>
           </CardContent>
         </Card>
         <Card>
           <CardContent className="pt-4">
-            <p className="text-xs text-muted-foreground">积分余额</p>
+            <p className="text-xs text-muted-foreground">{t("stats.balance")}</p>
             {people.map((p) => (
               <p key={p.id} className="flex items-center justify-between text-sm">
                 <span className="flex items-center gap-1.5">

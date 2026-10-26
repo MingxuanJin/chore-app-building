@@ -8,10 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { useFamily } from "@/components/family-provider";
+import { useI18n } from "@/components/i18n-provider";
+import { LanguageSwitcher } from "@/components/language-switcher";
 
 export default function SettingsPage() {
   const router = useRouter();
   const { me, partner, family } = useFamily();
+  const { t } = useI18n();
   const [name, setName] = useState(me.name);
   const [familyName, setFamilyName] = useState(family.name);
   const [saved, setSaved] = useState(false);
@@ -37,20 +40,30 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">设置</h1>
+      <h1 className="text-xl font-bold">{t("settings.title")}</h1>
 
       <Card>
         <CardHeader>
-          <CardTitle>配对</CardTitle>
+          <CardTitle>{t("common.language")}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t("settings.languageHint")}</p>
+        </CardHeader>
+        <CardContent>
+          <LanguageSwitcher />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.pairing")}</CardTitle>
         </CardHeader>
         <CardContent className="flex flex-col gap-3 text-sm">
           {partner ? (
             <p>
-              已和 <span className="font-semibold">{partner.name || partner.email}</span> 配对 💞
+              {t("settings.pairedWith", { name: partner.name || partner.email })}
             </p>
           ) : (
             <>
-              <p className="text-muted-foreground">把配对码发给对方，TA 注册后输入即可加入：</p>
+              <p className="text-muted-foreground">{t("settings.shareCode")}</p>
               <div className="flex items-center gap-2">
                 <code className="flex-1 rounded-md bg-muted px-3 py-2 text-center font-mono text-2xl tracking-[0.3em]">
                   {family.pair_code}
@@ -59,7 +72,7 @@ export default function SettingsPage() {
                   variant="outline"
                   size="icon"
                   className="h-12 w-12"
-                  aria-label="复制配对码"
+                  aria-label={t("settings.copyCode")}
                   onClick={async () => {
                     await navigator.clipboard.writeText(family.pair_code);
                     setCopied(true);
@@ -69,7 +82,7 @@ export default function SettingsPage() {
                   <Copy />
                 </Button>
               </div>
-              {copied && <p className="text-xs text-success">已复制</p>}
+              {copied && <p className="text-xs text-success">{t("settings.copied")}</p>}
             </>
           )}
         </CardContent>
@@ -77,26 +90,26 @@ export default function SettingsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle>资料</CardTitle>
+          <CardTitle>{t("settings.profile")}</CardTitle>
         </CardHeader>
         <CardContent>
           <form onSubmit={save} className="flex flex-col gap-3">
             <div className="flex flex-col gap-2">
-              <Label htmlFor="name">我的昵称</Label>
+              <Label htmlFor="name">{t("settings.nickname")}</Label>
               <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
             </div>
             <div className="flex flex-col gap-2">
-              <Label htmlFor="family">家庭空间名称</Label>
+              <Label htmlFor="family">{t("settings.familyName")}</Label>
               <Input id="family" value={familyName} onChange={(e) => setFamilyName(e.target.value)} />
             </div>
-            <p className="text-xs text-muted-foreground">登录邮箱：{me.email}</p>
-            <Button type="submit">{saved ? "已保存 ✓" : "保存"}</Button>
+            <p className="text-xs text-muted-foreground">{t("settings.loginEmail", { email: me.email })}</p>
+            <Button type="submit">{saved ? t("common.saved") : t("common.save")}</Button>
           </form>
         </CardContent>
       </Card>
 
       <Button variant="outline" onClick={logout}>
-        <LogOut /> 退出登录
+        <LogOut /> {t("settings.logout")}
       </Button>
     </div>
   );

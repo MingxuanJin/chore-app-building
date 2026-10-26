@@ -8,6 +8,7 @@ import { browserTimeZone, describeMilestone } from "@/lib/milestones";
 import type { Redemption, Reward } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { useFamily } from "./family-provider";
+import { useI18n } from "./i18n-provider";
 
 type Unlock = Redemption & { rewards: Pick<Reward, "name" | "milestone_condition"> | null };
 
@@ -17,6 +18,7 @@ type Unlock = Redemption & { rewards: Pick<Reward, "name" | "milestone_condition
  */
 export function MilestoneWatcher() {
   const { me, partner } = useFamily();
+  const { t } = useI18n();
 
   const check = useCallback(() => {
     // the query builder only sends the request once it's awaited / then'd
@@ -57,11 +59,13 @@ export function MilestoneWatcher() {
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
           <PartyPopper className="h-8 w-8 text-primary" />
         </div>
-        <p className="text-sm text-muted-foreground">里程碑达成 · {describeMilestone(current.rewards?.milestone_condition ?? null)}</p>
+        <p className="text-sm text-muted-foreground">
+          {t("milestones.popupReached", { condition: describeMilestone(t, current.rewards?.milestone_condition ?? null) })}
+        </p>
         <h2 className="text-2xl font-bold">🎉 {current.rewards?.name}</h2>
-        <p className="text-sm text-muted-foreground">已通知{partner?.name || "TA"}，等 TA 来兑现吧～</p>
+        <p className="text-sm text-muted-foreground">{t("milestones.popupNotified", { name: partner?.name || t("common.partner") })}</p>
         <Button className="mt-2 w-full" size="lg" disabled={closing} onClick={dismiss}>
-          收下啦
+          {t("milestones.popupAccept")}
         </Button>
       </div>
     </div>

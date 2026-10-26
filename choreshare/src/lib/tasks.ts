@@ -1,13 +1,5 @@
 import type { RecurrenceType, RecurrenceValue, Task, TaskSession, TaskStatus } from "@/types/database";
-
-export const STATUS_LABEL: Record<TaskStatus, string> = {
-  pending: "待认领",
-  claimed: "待办",
-  in_progress: "进行中",
-  review: "待确认",
-  completed: "已完成",
-  rejected: "被驳回",
-};
+import type { TFunction } from "@/lib/i18n/translate";
 
 export const STATUS_STYLE: Record<TaskStatus, string> = {
   pending: "border-warning/40 bg-warning/10 text-warning",
@@ -18,20 +10,25 @@ export const STATUS_STYLE: Record<TaskStatus, string> = {
   rejected: "border-destructive/30 bg-destructive/10 text-destructive",
 };
 
-export const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
+/** Short weekday names, index 0 = Sunday */
+export function weekdays(t: TFunction): string[] {
+  return t("time.weekdays").split(",");
+}
 
-export function recurrenceLabel(type: RecurrenceType, value: RecurrenceValue | null): string {
+export function recurrenceLabel(t: TFunction, type: RecurrenceType, value: RecurrenceValue | null): string {
   switch (type) {
     case "daily":
-      return "每天";
+      return t("recurrence.daily");
     case "every_n_days":
-      return `每 ${value?.interval ?? 1} 天`;
-    case "weekly":
-      return value?.days?.length
-        ? `每周${[...value.days].sort().map((d) => WEEKDAYS[d]).join("、")}`
-        : "每周";
+      return t("recurrence.everyN", { n: value?.interval ?? 1 });
+    case "weekly": {
+      if (!value?.days?.length) return t("recurrence.weekly");
+      const names = weekdays(t);
+      const days = [...value.days].sort().map((d) => names[d]).join(t("time.listSep"));
+      return t("recurrence.weeklyOn", { days });
+    }
     case "monthly":
-      return `每月 ${value?.day ?? 1} 日`;
+      return t("recurrence.monthly", { day: value?.day ?? 1 });
     default:
       return "";
   }
@@ -61,11 +58,11 @@ export function formatDuration(totalSeconds: number): string {
   return h > 0 ? `${h}:${pad(m)}:${pad(s)}` : `${pad(m)}:${pad(s)}`;
 }
 
-export function formatMinutes(minutes: number): string {
-  if (minutes < 60) return `${Math.round(minutes)} 分钟`;
+export function formatMinutes(t: TFunction, minutes: number): string {
+  if (minutes < 60) return t("time.minutes", { n: Math.round(minutes) });
   const h = Math.floor(minutes / 60);
   const m = Math.round(minutes % 60);
-  return m ? `${h} 小时 ${m} 分` : `${h} 小时`;
+  return m ? t("time.hoursMinutes", { h, m }) : t("time.hours", { h });
 }
 
 /** Local date as YYYY-MM-DD, `offsetDays` from today */
@@ -75,15 +72,20 @@ export function todayISO(offsetDays = 0): string {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
+/** "26 Oct" / "10月26日" for a YYYY-MM-DD date */
+export function formatShortDate(iso: string, dateLocale: string): string {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString(dateLocale, { month: "short", day: "numeric" });
+}
+
 export function isActive(t: Task): boolean {
   return t.status !== "completed";
 }
 
-export function dueLabel(due: string | null): string | null {
+export function dueLabel(t: TFunction, dateLocale: string, due: string | null): string | null {
   if (!due) return null;
   const today = todayISO();
-  if (due === today) return "今天";
-  if (due < today) return `已逾期 · ${due.slice(5)}`;
-  if (due === todayISO(1)) return "明天";
-  return due.slice(5);
+  if (due === today) return t("time.today");
+  if (due < today) return t("time.overdue", { date: formatShortDate(due, dateLocale) });
+  if (due === todayISO(1)) return t("time.tomorrow");
+  return formatShortDate(due, dateLocale);
 }
