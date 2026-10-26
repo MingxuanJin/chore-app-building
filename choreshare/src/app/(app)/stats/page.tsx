@@ -1,10 +1,9 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { Bar, BarChart, CartesianGrid, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { createClient } from "@/lib/supabase/client";
 import { useLiveQuery } from "@/lib/supabase/realtime";
-import type { Task, TaskReview, TaskSession } from "@/types/database";
+import type { Redemption, Reward, Task, TaskReview, TaskSession } from "@/types/database";
 import { formatMinutes, todayISO } from "@/lib/tasks";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +11,8 @@ import { cn } from "@/lib/utils";
 import { useFamily } from "@/components/family-provider";
 import { usePoints } from "@/components/use-points";
 import { useI18n } from "@/components/i18n-provider";
+import { GroupedBars, Meter, TrendLines, type Series } from "@/components/stats/charts";
+import { Button } from "@/components/ui/button";
 
 type Range = "week" | "month" | "custom";
 
@@ -44,61 +45,142 @@ function toBounds(from: string, to: string) {
   return { start: new Date(`${from}T00:00:00`).toISOString(), end: end.toISOString() };
 }
 
+type ReviewRow = TaskReview & { tasks: Pick<Task, "title" | "difficulty"> | null };
+type RedemptionRow = Redemption & { rewards: Pick<Reward, "name"> | null };
+
+const LEDGER_PAGE = 10;
+
 export default function StatsPage() {
-  const { me, partner } = useFamily();
+  const { me, partner, nameOf } = useFamily();
   const { t, dateLocale } = useI18n();
   const { points } = usePoints();
   const [range, setRange] = useState<Range>("week");
   const [custom, setCustom] = useState({ from: todayISO(-13), to: todayISO() });
+  const [ledgerShown, setLedgerShown] = useState(LEDGER_PAGE);
 
   const { from, to } = rangeDates(range, custom);
 
   const fetchStats = useCallback(async () => {
     const supabase = createClient();
     const { start, end } = toBounds(from, to);
-    const [r, s, t] = await Promise.all([
-      supabase.from("task_reviews").select("*").eq("status", "approved").gte("created_at", start).lt("created_at", end).returns<TaskReview[]>(),
-      supabase.from("task_sessions").select("*").not("ended_at", "is", null).gte("ended_at", start).lt("ended_at", end).returns<TaskSession[]>(),
-      supabase.from("tasks").select("id, status").gte("due_date", from).lte("due_date", to < todayISO() ? to : todayISO()),
+    const [r, s, tk, rd] = await Promise.all([
+      supabase
+        .from("task_reviews")
+        .select("*, tasks(title, difficulty)")
+        .eq("status", "approved")
+        .gte("created_at", start)
+        .lt("created_at", end)
+        .returns<ReviewRow[]>(),
+      supabase
+        .from("task_sessions")
+        .select("*")
+        .not("ended_at", "is", null)
+        .gte("ended_at", start)
+        .lt("ended_at", end)
+        .returns<TaskSession[]>(),
+      supabase
+        .from("tasks")
+        .select("id, status")
+        .gte("due_date", from)
+        .lte("due_date", to < todayISO() ? to : todayISO()),
+      supabase
+        .from("redemptions")
+        .select("*, rewards(name)")
+        .gt("points_spent", 0)
+        .gte("created_at", start)
+        .lt("created_at", end)
+        .returns<RedemptionRow[]>(),
     ]);
     return {
       reviews: r.data ?? [],
       sessions: s.data ?? [],
-      dueTasks: (t.data as Pick<Task, "id" | "status">[]) ?? [],
+      dueTasks: (tk.data as Pick<Task, "id" | "status">[]) ?? [],
+      redemptions: rd.data ?? [],
     };
   }, [from, to]);
-  const { data } = useLiveQuery(fetchStats, ["task_reviews", "task_sessions", "tasks"]);
-  const reviews = useMemo(() => data?.reviews ?? [], [data]);
-  const sessions = data?.sessions ?? [];
-  const dueTasks = data?.dueTasks ?? [];
+  const { data } = useLiveQuery(fetchStats, ["task_reviews", "task_sessions", "tasks", "redemptions"]);
 
-  const people = [
-    { id: me.id, name: me.name || t("common.you"), color: "var(--series-me)" },
-    ...(partner ? [{ id: partner.id, name: partner.name || t("common.partner"), color: "var(--series-partner)" }] : []),
-  ];
+  const people: Series[] = useMemo(
+    () => [
+      { id: me.id, name: me.name || t("common.you"), color: "var(--series-me)" },
+      ...(partner ? [{ id: partner.id, name: partner.name || t("common.partner"), color: "var(--series-partner)" }] : []),
+    ],
+    [me, partner, t]
+  );
 
-  const sum = (fn: (id: string) => number) => Object.fromEntries(people.map((p) => [p.id, fn(p.id)]));
-  const counts = sum((id) => reviews.filter((r) => r.earned_by === id).length);
-  const minutes = sum((id) => sessions.filter((s) => s.user_id === id).reduce((a, s) => a + Number(s.actual_minutes ?? 0), 0));
-  const earned = sum((id) => reviews.filter((r) => r.earned_by === id).reduce((a, r) => a + (r.points_awarded ?? 0), 0));
-  const completionRate = dueTasks.length ? Math.round((dueTasks.filter((t) => t.status === "completed").length / dueTasks.length) * 100) : null;
+  const stats = useMemo(() => {
+    const reviews = data?.reviews ?? [];
+    const sessions = data?.sessions ?? [];
+    const dueTasks = data?.dueTasks ?? [];
+    const redemptions = data?.redemptions ?? [];
+    const per = (fn: (id: string) => number) => Object.fromEntries(people.map((p) => [p.id, fn(p.id)]));
+    const sessionMinutes = (x: TaskSession) => Number(x.actual_minutes ?? 0);
 
-  const daily = useMemo(() => {
-    const rows: Record<string, string | number>[] = [];
+    // One row per day in the range (capped so a huge custom range stays readable)
+    const daily: Record<string, string | number>[] = [];
+    const trend: Record<string, string | number>[] = [];
     const d = new Date(`${from}T00:00:00`);
     const last = new Date(`${to}T00:00:00`);
-    while (d <= last && rows.length < 62) {
+    while (d <= last && daily.length < 92) {
       const day = localISO(d);
-      const row: Record<string, string | number> = { day: d.toLocaleDateString(dateLocale, { month: "numeric", day: "numeric" }) };
+      const label = d.toLocaleDateString(dateLocale, { month: "numeric", day: "numeric" });
+      const countRow: Record<string, string | number> = { day: label };
+      const timeRow: Record<string, string | number> = { day: label };
       for (const p of people) {
-        row[p.id] = reviews.filter((r) => r.earned_by === p.id && localISO(new Date(r.created_at)) === day).length;
+        countRow[p.id] = reviews.filter((r) => r.earned_by === p.id && localISO(new Date(r.created_at)) === day).length;
+        timeRow[p.id] = Math.round(
+          sessions
+            .filter((x) => x.user_id === p.id && localISO(new Date(x.ended_at!)) === day)
+            .reduce((a, x) => a + sessionMinutes(x), 0)
+        );
       }
-      rows.push(row);
+      daily.push(countRow);
+      trend.push(timeRow);
       d.setDate(d.getDate() + 1);
     }
-    return rows;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [from, to, reviews, me.id, partner?.id, dateLocale]);
+
+    const byDifficulty = [1, 2, 3, 4, 5].map((level) => {
+      const row: Record<string, string | number> = { level: t("stats.stars", { n: level }) };
+      for (const p of people) {
+        row[p.id] = reviews.filter((r) => r.earned_by === p.id && r.tasks?.difficulty === level).length;
+      }
+      return row;
+    });
+
+    const ledger = [
+      ...reviews.map((r) => ({
+        id: r.id,
+        at: r.created_at,
+        user: r.earned_by,
+        reason: r.tasks?.title ?? "—",
+        delta: r.points_awarded ?? 0,
+      })),
+      ...redemptions.map((r) => ({
+        id: r.id,
+        at: r.created_at,
+        user: r.user_id,
+        reason: r.rewards?.name ?? t("rewards.deletedReward"),
+        delta: -r.points_spent,
+      })),
+    ].sort((a, b) => b.at.localeCompare(a.at));
+
+    const done = dueTasks.filter((x) => x.status === "completed").length;
+
+    return {
+      counts: per((id) => reviews.filter((r) => r.earned_by === id).length),
+      minutes: per((id) => sessions.filter((x) => x.user_id === id).reduce((a, x) => a + sessionMinutes(x), 0)),
+      earned: per((id) => reviews.filter((r) => r.earned_by === id).reduce((a, r) => a + (r.points_awarded ?? 0), 0)),
+      completion: {
+        done,
+        total: dueTasks.length,
+        rate: dueTasks.length ? Math.round((done / dueTasks.length) * 100) : null,
+      },
+      daily,
+      trend,
+      byDifficulty,
+      ledger,
+    };
+  }, [data, people, from, to, dateLocale, t]);
 
   return (
     <div className="flex flex-col gap-4">
@@ -140,43 +222,20 @@ export default function StatsPage() {
           <p className="text-xs text-muted-foreground">{t("stats.shareHint")}</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <ShareBar label={t("stats.tasksDone")} people={people} values={counts} format={(v) => t("stats.tasksUnit", { n: v })} />
-          <ShareBar label={t("stats.timeSpent")} people={people} values={minutes} format={(v) => formatMinutes(t, v)} />
-          <ShareBar label={t("stats.pointsEarned")} people={people} values={earned} format={(v) => t("common.points", { n: v })} />
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">{t("stats.dailyChart")}</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="h-52">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={daily} barGap={2} margin={{ top: 4, right: 0, left: -28, bottom: 0 }}>
-                <CartesianGrid vertical={false} stroke="var(--border)" />
-                <XAxis dataKey="day" tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} interval="preserveStartEnd" />
-                <YAxis allowDecimals={false} tickLine={false} axisLine={false} tick={{ fontSize: 11, fill: "var(--muted-foreground)" }} />
-                <Tooltip
-                  cursor={{ fill: "var(--muted)" }}
-                  contentStyle={{ background: "var(--card)", border: "1px solid var(--border)", borderRadius: 8, fontSize: 12, color: "var(--foreground)" }}
-                  formatter={(value, key) => [t("stats.tasksUnit", { n: Number(value) }), people.find((p) => p.id === key)?.name ?? ""]}
-                />
-                {people.map((p) => (
-                  <Bar key={p.id} dataKey={p.id} fill={p.color} radius={[4, 4, 0, 0]} maxBarSize={18} />
-                ))}
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
+          <ShareBar label={t("stats.tasksDone")} people={people} values={stats.counts} format={(v) => t("stats.tasksUnit", { n: v })} />
+          <ShareBar label={t("stats.timeSpent")} people={people} values={stats.minutes} format={(v) => formatMinutes(t, v)} />
+          <ShareBar label={t("stats.pointsEarned")} people={people} values={stats.earned} format={(v) => t("common.points", { n: v })} />
         </CardContent>
       </Card>
 
       <div className="grid grid-cols-2 gap-3">
         <Card>
-          <CardContent className="pt-4">
+          <CardContent className="flex flex-col gap-2 pt-4">
             <p className="text-xs text-muted-foreground">{t("stats.completionRate")}</p>
-            <p className="text-3xl font-bold tabular-nums">{completionRate === null ? "—" : `${completionRate}%`}</p>
-            <p className="text-xs text-muted-foreground">{t("stats.completionHint", { n: dueTasks.length })}</p>
+            <Meter
+              value={stats.completion.rate}
+              label={t("stats.completionDetail", { done: stats.completion.done, total: stats.completion.total })}
+            />
           </CardContent>
         </Card>
         <Card>
@@ -194,11 +253,73 @@ export default function StatsPage() {
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("stats.dailyChart")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <GroupedBars data={stats.daily} xKey="day" series={people} format={(v) => t("stats.tasksUnit", { n: v })} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("stats.timeTrend")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <TrendLines data={stats.trend} xKey="day" series={people} format={(v) => formatMinutes(t, v)} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("stats.difficultyChart")}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t("stats.difficultyHint")}</p>
+        </CardHeader>
+        <CardContent>
+          <GroupedBars data={stats.byDifficulty} xKey="level" series={people} format={(v) => t("stats.tasksUnit", { n: v })} />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">{t("stats.ledger")}</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {stats.ledger.length === 0 ? (
+            <p className="py-4 text-center text-sm text-muted-foreground">{t("stats.ledgerEmpty")}</p>
+          ) : (
+            <ul className="flex flex-col divide-y text-sm">
+              {stats.ledger.slice(0, ledgerShown).map((e) => (
+                <li key={e.id} className="flex items-center gap-2 py-2">
+                  <span
+                    className="h-2 w-2 shrink-0 rounded-full"
+                    style={{ background: people.find((p) => p.id === e.user)?.color }}
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate">{e.reason}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {nameOf(e.user)} · {new Date(e.at).toLocaleDateString(dateLocale, { month: "short", day: "numeric" })}
+                    </span>
+                  </span>
+                  <span className="font-semibold tabular-nums">{e.delta > 0 ? `+${e.delta}` : `−${-e.delta}`}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+          {stats.ledger.length > ledgerShown && (
+            <Button variant="ghost" size="sm" className="mt-2 w-full" onClick={() => setLedgerShown((n) => n + LEDGER_PAGE)}>
+              {t("stats.showMore")}
+            </Button>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
 
-type Person = { id: string; name: string; color: string };
+type Person = Series;
 
 function Legend({ people }: { people: Person[] }) {
   return (
@@ -241,7 +362,7 @@ function ShareBar({
             return pct > 0 ? (
               <div
                 key={p.id}
-                title={`${p.name}：${format(values[p.id] ?? 0)}（${Math.round(pct)}%）`}
+                title={`${p.name}: ${format(values[p.id] ?? 0)} (${Math.round(pct)}%)`}
                 className="h-full"
                 style={{ width: `${pct}%`, background: p.color }}
               />
