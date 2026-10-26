@@ -10,6 +10,7 @@ import { Input, Label } from "@/components/ui/input";
 import { useFamily } from "@/components/family-provider";
 import { useI18n } from "@/components/i18n-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { PushToggle } from "@/components/push-toggle";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -49,6 +50,16 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <LanguageSwitcher />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.push")}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t("settings.pushHint")}</p>
+        </CardHeader>
+        <CardContent>
+          <PushToggle />
         </CardContent>
       </Card>
 

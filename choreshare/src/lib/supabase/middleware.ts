@@ -30,7 +30,8 @@ export async function updateSession(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
-  const isPublic = path.startsWith("/login") || path.startsWith("/auth");
+  // /api/push is called by the database (authenticated by a shared secret, not a session)
+  const isPublic = path.startsWith("/login") || path.startsWith("/auth") || path === "/api/push";
 
   // Redirect unauthenticated users to login (except for login page itself)
   if (!user && !isPublic) {

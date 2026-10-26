@@ -2,7 +2,7 @@
 // - Static build assets: cache-first (file names are content-hashed)
 // - Page navigations: network-first, fall back to the offline page
 // - Everything else (Supabase API, realtime) is never touched
-const CACHE = "choreshare-v1";
+const CACHE = "choreshare-v2";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
@@ -49,4 +49,36 @@ self.addEventListener("fetch", (event) => {
   if (request.mode === "navigate") {
     event.respondWith(fetch(request).catch(() => caches.match(OFFLINE_URL)));
   }
+});
+
+// ---- Web Push ----
+self.addEventListener("push", (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { body: event.data && event.data.text() };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || "ChoreShare", {
+      body: data.body || "",
+      icon: "/icons/icon-192.png",
+      badge: "/icons/icon-192.png",
+      tag: data.tag,
+      data: { url: data.url || "/dashboard" },
+    })
+  );
+});
+
+// Focus an open window (navigating it to the target) or open a new one
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const url = new URL(event.notification.data?.url || "/dashboard", self.location.origin).href;
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((windows) => {
+      const existing = windows.find((w) => new URL(w.url).origin === self.location.origin);
+      if (existing) return existing.navigate(url).then((w) => (w || existing).focus());
+      return self.clients.openWindow(url);
+    })
+  );
 });
