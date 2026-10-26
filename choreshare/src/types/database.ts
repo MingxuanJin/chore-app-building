@@ -48,6 +48,7 @@ export interface Task {
   created_by: string;
   status: TaskStatus;
   due_date: string | null;
+  series_id: string | null; // shared by all instances of a recurring task
   created_at: string;
   updated_at: string;
 }
@@ -142,6 +143,7 @@ export interface UserPoints {
 
 export type NotificationType =
   | "task_assigned"
+  | "task_due"
   | "task_claimed"
   | "task_submitted"
   | "task_approved"

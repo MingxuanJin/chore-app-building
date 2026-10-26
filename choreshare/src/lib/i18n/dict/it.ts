@@ -302,6 +302,7 @@ export const it: Dict = {
     markAll: "Segna tutte come lette",
     empty: "Nessuna notifica 🔕",
     unread: "Non letta",
+    task_due: "Oggi tocca a «{title}» 📅",
     task_assigned: "{name} ti ha assegnato «{title}»",
     task_claimed: "{name} ha preso «{title}»",
     task_submitted: "{name} ha finito «{title}»: confermi?",

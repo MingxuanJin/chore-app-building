@@ -301,6 +301,7 @@ export const zh = {
     markAll: "全部已读",
     empty: "暂时没有通知 🔕",
     unread: "未读",
+    task_due: "今天该做「{title}」了 📅",
     task_assigned: "{name} 把「{title}」分配给了你",
     task_claimed: "{name} 认领了「{title}」",
     task_submitted: "{name} 完成了「{title}」，等你确认",

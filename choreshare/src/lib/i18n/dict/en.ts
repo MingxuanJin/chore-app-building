@@ -302,6 +302,7 @@ export const en: Dict = {
     markAll: "Mark all read",
     empty: "No notifications yet 🔕",
     unread: "Unread",
+    task_due: "Time for “{title}” today 📅",
     task_assigned: "{name} assigned “{title}” to you",
     task_claimed: "{name} claimed “{title}”",
     task_submitted: "{name} finished “{title}” — please review",

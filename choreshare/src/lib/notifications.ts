@@ -1,9 +1,10 @@
-import { Check, CircleAlert, Gift, Hand, ListTodo, PartyPopper, ShoppingCart, Trophy, UserPlus } from "lucide-react";
+import { CalendarClock, Check, CircleAlert, Gift, Hand, ListTodo, PartyPopper, ShoppingCart, Trophy, UserPlus } from "lucide-react";
 import type { AppNotification, NotificationType } from "@/types/database";
 import type { TFunction } from "@/lib/i18n/translate";
 
 export const NOTIFICATION_ICON: Record<NotificationType, React.ElementType> = {
   task_assigned: UserPlus,
+  task_due: CalendarClock,
   task_claimed: Hand,
   task_submitted: ListTodo,
   task_approved: Check,
