@@ -295,6 +295,11 @@ export const zh = {
     pushDenied: "通知权限被拒绝了，请在浏览器或系统设置里允许 ChoreShare 发送通知",
     pushNotReady: "推送只在正式部署的版本中可用",
     pushError: "开启失败：{message}",
+    appearance: "外观",
+    appearanceHint: "只对这台设备生效",
+    themeSystem: "跟随系统",
+    themeLight: "浅色",
+    themeDark: "深色",
   },
   notifications: {
     title: "通知",

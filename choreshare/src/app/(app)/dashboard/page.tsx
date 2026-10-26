@@ -81,7 +81,7 @@ function Section({ title, tasks, empty, accent }: { title: string; tasks: Task[]
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <h2 className={`text-sm font-semibold ${accent ? "text-orange-600" : "text-muted-foreground"}`}>
+        <h2 className={`text-sm font-semibold ${accent ? "text-attention" : "text-muted-foreground"}`}>
           {title} {tasks.length > 0 && `(${tasks.length})`}
         </h2>
         <Link href="/tasks" className="flex items-center text-xs text-muted-foreground">

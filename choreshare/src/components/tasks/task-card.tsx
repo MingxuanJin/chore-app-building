@@ -24,7 +24,7 @@ export function TaskCard({ task }: { task: Task }) {
       href={`/tasks/${task.id}`}
       className={cn(
         "flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50",
-        needsMyReview && "border-orange-500/50"
+        needsMyReview && "border-attention/50"
       )}
     >
       <div className="min-w-0 flex-1">
@@ -67,7 +67,7 @@ export function TaskCard({ task }: { task: Task }) {
           {t("tasks.claim")}
         </Button>
       )}
-      {needsMyReview && <span className="text-xs font-medium text-orange-600">{t("tasks.goReview")}</span>}
+      {needsMyReview && <span className="text-xs font-medium text-attention">{t("tasks.goReview")}</span>}
     </Link>
   );
 }

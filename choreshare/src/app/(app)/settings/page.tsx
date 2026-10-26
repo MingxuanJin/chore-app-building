@@ -11,6 +11,7 @@ import { useFamily } from "@/components/family-provider";
 import { useI18n } from "@/components/i18n-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { PushToggle } from "@/components/push-toggle";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -50,6 +51,16 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <LanguageSwitcher />
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.appearance")}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t("settings.appearanceHint")}</p>
+        </CardHeader>
+        <CardContent>
+          <ThemeSwitcher />
         </CardContent>
       </Card>
 

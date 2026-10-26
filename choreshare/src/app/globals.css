@@ -19,6 +19,8 @@
   --destructive-foreground: hsl(0 0% 98%);
   --success: hsl(142 71% 40%);
   --warning: hsl(38 92% 50%);
+  --attention: hsl(21 90% 48%); /* needs your action: review, owed rewards */
+  --info: hsl(221 83% 53%); /* in progress */
   --border: hsl(240 5.9% 90%);
   --input: hsl(240 5.9% 90%);
   --ring: hsl(262 83% 58%);
@@ -31,9 +33,9 @@
 .dark {
   --background: hsl(240 10% 3.9%);
   --foreground: hsl(0 0% 98%);
-  --card: hsl(240 10% 3.9%);
+  --card: hsl(240 6% 9%);
   --card-foreground: hsl(0 0% 98%);
-  --primary: hsl(262 83% 68%);
+  --primary: hsl(262 83% 63%);
   --primary-foreground: hsl(0 0% 100%);
   --secondary: hsl(240 3.7% 15.9%);
   --secondary-foreground: hsl(0 0% 98%);
@@ -41,11 +43,15 @@
   --muted-foreground: hsl(240 5% 64.9%);
   --accent: hsl(240 3.7% 15.9%);
   --accent-foreground: hsl(0 0% 98%);
-  --destructive: hsl(0 62.8% 30.6%);
+  --destructive: hsl(0 72% 58%);
   --destructive-foreground: hsl(0 0% 98%);
-  --border: hsl(240 3.7% 15.9%);
+  --success: hsl(142 60% 48%);
+  --warning: hsl(38 92% 55%);
+  --attention: hsl(27 96% 61%);
+  --info: hsl(213 94% 68%);
+  --border: hsl(240 3.7% 18%);
   --input: hsl(240 3.7% 15.9%);
-  --ring: hsl(262 83% 68%);
+  --ring: hsl(262 83% 63%);
   --series-me: #3987e5;
   --series-partner: #d95926;
 }
@@ -67,6 +73,8 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-success: var(--success);
   --color-warning: var(--warning);
+  --color-attention: var(--attention);
+  --color-info: var(--info);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);

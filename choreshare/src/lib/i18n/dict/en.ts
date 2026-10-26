@@ -296,6 +296,11 @@ export const en: Dict = {
     pushDenied: "Notifications are blocked — allow them for ChoreShare in your browser or system settings",
     pushNotReady: "Push only works in the deployed version of the app",
     pushError: "Couldn't turn on push: {message}",
+    appearance: "Appearance",
+    appearanceHint: "Applies to this device only",
+    themeSystem: "System",
+    themeLight: "Light",
+    themeDark: "Dark",
   },
   notifications: {
     title: "Notifications",

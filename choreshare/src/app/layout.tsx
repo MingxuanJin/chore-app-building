@@ -5,6 +5,9 @@ import { ServiceWorkerRegister } from "@/components/sw-register";
 import { I18nProvider } from "@/components/i18n-provider";
 import { DATE_LOCALE } from "@/lib/i18n/config";
 import { getRequestLocale } from "@/lib/i18n/server";
+import { ThemeProvider } from "@/components/theme-provider";
+import { THEME_COOKIE, THEME_INIT_SCRIPT, isTheme } from "@/lib/theme";
+import { cookies } from "next/headers";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -23,7 +26,10 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#7c3aed",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#7c3aed" },
+    { media: "(prefers-color-scheme: dark)", color: "#0a0a0b" },
+  ],
 };
 
 export default async function RootLayout({
@@ -32,12 +38,20 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const locale = await getRequestLocale();
+  const themeCookie = (await cookies()).get(THEME_COOKIE)?.value;
+  const theme = isTheme(themeCookie) ? themeCookie : "system";
   return (
-    <html lang={DATE_LOCALE[locale]}>
+    // the init script sets the "dark" class before React hydrates
+    <html lang={DATE_LOCALE[locale]} className={theme === "dark" ? "dark" : undefined} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+      </head>
       <body className={inter.className}>
-        <I18nProvider locale={locale}>
-          <main className="min-h-screen">{children}</main>
-        </I18nProvider>
+        <ThemeProvider initialTheme={theme}>
+          <I18nProvider locale={locale}>
+            <main className="min-h-screen">{children}</main>
+          </I18nProvider>
+        </ThemeProvider>
         <ServiceWorkerRegister />
       </body>
     </html>

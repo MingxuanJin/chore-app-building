@@ -296,6 +296,11 @@ export const it: Dict = {
     pushDenied: "Le notifiche sono bloccate: consentile a ChoreShare nelle impostazioni del browser o del sistema",
     pushNotReady: "Le push funzionano solo nella versione pubblicata dell'app",
     pushError: "Impossibile attivare le push: {message}",
+    appearance: "Aspetto",
+    appearanceHint: "Vale solo per questo dispositivo",
+    themeSystem: "Sistema",
+    themeLight: "Chiaro",
+    themeDark: "Scuro",
   },
   notifications: {
     title: "Notifiche",

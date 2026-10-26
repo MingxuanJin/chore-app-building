@@ -4,8 +4,8 @@ import type { TFunction } from "@/lib/i18n/translate";
 export const STATUS_STYLE: Record<TaskStatus, string> = {
   pending: "border-warning/40 bg-warning/10 text-warning",
   claimed: "border-primary/30 bg-primary/10 text-primary",
-  in_progress: "border-blue-500/30 bg-blue-500/10 text-blue-600",
-  review: "border-orange-500/30 bg-orange-500/10 text-orange-600",
+  in_progress: "border-info/30 bg-info/10 text-info",
+  review: "border-attention/30 bg-attention/10 text-attention",
   completed: "border-success/30 bg-success/10 text-success",
   rejected: "border-destructive/30 bg-destructive/10 text-destructive",
 };

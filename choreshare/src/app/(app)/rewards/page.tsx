@@ -118,9 +118,9 @@ export default function RewardsPage() {
 
       {owedByMe.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-orange-600">{t("rewards.owedByMe")}</h2>
+          <h2 className="text-sm font-semibold text-attention">{t("rewards.owedByMe")}</h2>
           {owedByMe.map((r) => (
-            <div key={r.id} className="flex items-center gap-2 rounded-lg border border-orange-500/40 bg-orange-500/5 p-3 text-sm">
+            <div key={r.id} className="flex items-center gap-2 rounded-lg border border-attention/40 bg-attention/5 p-3 text-sm">
               <span className="flex-1">
                 {t(r.period_key ? "rewards.unlockedThing" : "rewards.redeemedThing", {
                   name: nameOf(r.user_id),
