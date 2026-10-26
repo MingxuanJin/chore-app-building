@@ -293,7 +293,7 @@ export const en: Dict = {
     pushEnable: "Turn on push",
     pushDisable: "Turn off push",
     pushUnsupported: "This browser doesn't support push. On iPhone, add the app to your Home Screen from Safari first, then open it from there (iOS 16.4+)",
-    pushDenied: "Notifications are blocked — allow them for ChoreShare in your browser or system settings",
+    pushDenied: "Notifications are blocked — allow them for BunnyChore in your browser or system settings",
     pushNotReady: "Push only works in the deployed version of the app",
     pushError: "Couldn't turn on push: {message}",
   },

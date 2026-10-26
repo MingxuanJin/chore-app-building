@@ -74,7 +74,7 @@ export function DataExport() {
         ];
       })
     );
-    downloadCSV(`choreshare-tasks-${todayISO()}.csv`, csv);
+    downloadCSV(`bunnychore-tasks-${todayISO()}.csv`, csv);
     setBusy(null);
   }
 
@@ -106,7 +106,7 @@ export function DataExport() {
       [t("export.colDate"), t("export.colPerson"), t("export.colType"), t("export.colItem"), t("export.colChange")],
       rows.map((r) => [dateTime(r.at), personName(r.user), r.type, r.item, r.delta])
     );
-    downloadCSV(`choreshare-points-${todayISO()}.csv`, csv);
+    downloadCSV(`bunnychore-points-${todayISO()}.csv`, csv);
     setBusy(null);
   }
 

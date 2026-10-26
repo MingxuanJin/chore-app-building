@@ -1,5 +1,5 @@
 // ============================================================
-// ChoreShare Database Types
+// BunnyChore Database Types
 // Maps directly to Supabase tables defined in the PRD
 // ============================================================
 

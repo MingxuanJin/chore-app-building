@@ -1,4 +1,4 @@
-# ChoreShare — 情侣家务分配与记录 App
+# BunnyChore — 情侣家务分配与记录 App
 
 ## 一句话定义
 
@@ -274,3 +274,4 @@ ShoppingItem { id, family_id, name, added_by, assigned_to,
 - 统计页：完成率用进度条、难度分布用分组柱状图（没用 PRD 原写的环形图 / 饼图，以便看清公平性）。
 - 语言和推送按人设置。
 - 2026-10-26：整体视觉改为 Fawnlight，去掉了深色模式和文案里的 emoji。
+- 2026-10-26：App 改名 BunnyChore；图标是 Fawnlight 的蕾丝杯垫框加小白兔（`public/icons/`）。代码目录仍叫 `choreshare/`（Vercel 的 Root Directory 指向它），已运行的迁移文件注释里的旧名不改。

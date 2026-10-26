@@ -16,10 +16,10 @@ const notoSerifSC = Noto_Serif_SC({ weight: ["400", "600"], preload: false, vari
 const fontVars = [cormorant, ebGaramond, courierPrime, pinyon, notoSerifSC].map((f) => f.variable).join(" ");
 
 export const metadata: Metadata = {
-  title: "ChoreShare",
+  title: "BunnyChore",
   description: "Share chores fairly as a couple · 情侣家务分配 · Faccende di coppia",
-  applicationName: "ChoreShare",
-  appleWebApp: { capable: true, title: "ChoreShare", statusBarStyle: "default" },
+  applicationName: "BunnyChore",
+  appleWebApp: { capable: true, title: "BunnyChore", statusBarStyle: "default" },
   icons: {
     icon: [{ url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" }],
     apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180" }],

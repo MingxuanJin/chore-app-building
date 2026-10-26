@@ -1,8 +1,8 @@
-// ChoreShare service worker
+// BunnyChore service worker
 // - Static build assets: cache-first (file names are content-hashed)
 // - Page navigations: network-first, fall back to the offline page
 // - Everything else (Supabase API, realtime) is never touched
-const CACHE = "choreshare-v2";
+const CACHE = "bunnychore-v3";
 const OFFLINE_URL = "/offline.html";
 
 self.addEventListener("install", (event) => {
@@ -60,7 +60,7 @@ self.addEventListener("push", (event) => {
     data = { body: event.data && event.data.text() };
   }
   event.waitUntil(
-    self.registration.showNotification(data.title || "ChoreShare", {
+    self.registration.showNotification(data.title || "BunnyChore", {
       body: data.body || "",
       icon: "/icons/icon-192.png",
       badge: "/icons/icon-192.png",

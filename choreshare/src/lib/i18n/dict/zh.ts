@@ -292,7 +292,7 @@ export const zh = {
     pushEnable: "开启推送",
     pushDisable: "关闭推送",
     pushUnsupported: "这个浏览器不支持推送。iPhone 需要先用 Safari「添加到主屏幕」，再从主屏幕图标打开（iOS 16.4 以上）",
-    pushDenied: "通知权限被拒绝了，请在浏览器或系统设置里允许 ChoreShare 发送通知",
+    pushDenied: "通知权限被拒绝了，请在浏览器或系统设置里允许 BunnyChore 发送通知",
     pushNotReady: "推送只在正式部署的版本中可用",
     pushError: "开启失败：{message}",
   },

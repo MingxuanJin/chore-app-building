@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
   const n = body.notification;
 
   const payload = JSON.stringify({
-    title: "ChoreShare",
+    title: "BunnyChore",
     body: notificationText(t, n, body.subject_name || t("common.partner")),
     url: notificationHref(n),
     tag: n.id,

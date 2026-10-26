@@ -293,7 +293,7 @@ export const it: Dict = {
     pushEnable: "Attiva push",
     pushDisable: "Disattiva push",
     pushUnsupported: "Questo browser non supporta le push. Su iPhone aggiungi prima l'app alla schermata Home da Safari, poi aprila da lì (iOS 16.4+)",
-    pushDenied: "Le notifiche sono bloccate: consentile a ChoreShare nelle impostazioni del browser o del sistema",
+    pushDenied: "Le notifiche sono bloccate: consentile a BunnyChore nelle impostazioni del browser o del sistema",
     pushNotReady: "Le push funzionano solo nella versione pubblicata dell'app",
     pushError: "Impossibile attivare le push: {message}",
   },
