@@ -12,6 +12,7 @@ import { useI18n } from "@/components/i18n-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { PushToggle } from "@/components/push-toggle";
 import { ThemeSwitcher } from "@/components/theme-switcher";
+import { DataExport } from "@/components/data-export";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -127,6 +128,16 @@ export default function SettingsPage() {
             <p className="text-xs text-muted-foreground">{t("settings.loginEmail", { email: me.email })}</p>
             <Button type="submit">{saved ? t("common.saved") : t("common.save")}</Button>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("export.title")}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t("export.hint")}</p>
+        </CardHeader>
+        <CardContent>
+          <DataExport />
         </CardContent>
       </Card>
 
