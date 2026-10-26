@@ -73,6 +73,13 @@ export interface TaskReview {
   created_at: string;
 }
 
+export type MilestoneType = "streak_days" | "monthly_completion" | "total_tasks" | "total_points";
+
+export interface MilestoneCondition {
+  type: MilestoneType;
+  target: number;
+}
+
 export interface Reward {
   id: string;
   family_id: string;
@@ -80,7 +87,7 @@ export interface Reward {
   description: string | null;
   cost_points: number | null; // null for milestone type
   reward_type: RewardType;
-  milestone_condition: Record<string, unknown> | null; // JSON config for milestone
+  milestone_condition: MilestoneCondition | null; // null for redeem type
   created_by: string;
   is_active: boolean;
   created_at: string;
@@ -92,6 +99,8 @@ export interface Redemption {
   user_id: string;
   points_spent: number;
   is_fulfilled: boolean;
+  period_key: string | null; // set for milestone unlocks
+  seen_at: string | null; // when the unlocker saw the celebration
   created_at: string;
 }
 
@@ -114,6 +123,13 @@ export interface ShoppingItem {
 export interface TaskWithAssignee extends Task {
   assignee?: Pick<Profile, "id" | "name" | "avatar_url">;
   creator?: Pick<Profile, "id" | "name" | "avatar_url">;
+}
+
+export interface MilestoneProgress {
+  reward_id: string;
+  user_id: string;
+  progress: number;
+  target: number;
 }
 
 export interface UserPoints {
