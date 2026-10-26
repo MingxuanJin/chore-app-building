@@ -1,0 +1,71 @@
+"use client";
+
+import Link from "next/link";
+import { CalendarDays, Repeat, User } from "lucide-react";
+import type { Task } from "@/types/database";
+import { STATUS_LABEL, STATUS_STYLE, dueLabel, recurrenceLabel, todayISO } from "@/lib/tasks";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { useFamily } from "@/components/family-provider";
+import { DifficultyStars } from "./difficulty";
+import { claimTask } from "./actions";
+
+export function TaskCard({ task }: { task: Task }) {
+  const { me, nameOf } = useFamily();
+  const due = dueLabel(task.due_date);
+  const overdue = task.status !== "completed" && task.due_date && task.due_date < todayISO();
+  const needsMyReview = task.status === "review" && task.assigned_to !== me.id;
+
+  return (
+    <Link
+      href={`/tasks/${task.id}`}
+      className={cn(
+        "flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50",
+        needsMyReview && "border-orange-500/50"
+      )}
+    >
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className={cn("truncate font-medium", task.status === "completed" && "text-muted-foreground line-through")}>
+            {task.title}
+          </span>
+          <Badge className={STATUS_STYLE[task.status]}>{STATUS_LABEL[task.status]}</Badge>
+        </div>
+        <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+          <DifficultyStars value={task.difficulty} />
+          {task.assigned_to && (
+            <span className="inline-flex items-center gap-1">
+              <User className="h-3 w-3" />
+              {nameOf(task.assigned_to)}
+            </span>
+          )}
+          {due && (
+            <span className={cn("inline-flex items-center gap-1", overdue && "text-destructive")}>
+              <CalendarDays className="h-3 w-3" />
+              {due}
+            </span>
+          )}
+          {task.recurrence_type !== "none" && (
+            <span className="inline-flex items-center gap-1">
+              <Repeat className="h-3 w-3" />
+              {recurrenceLabel(task.recurrence_type, task.recurrence_value)}
+            </span>
+          )}
+        </div>
+      </div>
+      {task.status === "pending" && (
+        <Button
+          size="sm"
+          onClick={(e) => {
+            e.preventDefault();
+            claimTask(task.id, me.id);
+          }}
+        >
+          我来做
+        </Button>
+      )}
+      {needsMyReview && <span className="text-xs font-medium text-orange-600">去确认</span>}
+    </Link>
+  );
+}

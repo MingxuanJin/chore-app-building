@@ -8,6 +8,15 @@ export type RecurrenceType = "none" | "daily" | "every_n_days" | "weekly" | "mon
 export type RewardType = "redeem" | "milestone";
 export type ReviewStatus = "approved" | "rejected";
 
+// interval: every_n_days, days: weekly (0 = Sunday), day: monthly,
+// open: recurring task goes back to "待认领" instead of the same person
+export interface RecurrenceValue {
+  interval?: number;
+  days?: number[];
+  day?: number;
+  open?: boolean;
+}
+
 export interface Family {
   id: string;
   name: string;
@@ -33,10 +42,11 @@ export interface Task {
   difficulty: number; // 1-5
   estimated_minutes: number | null;
   recurrence_type: RecurrenceType;
-  recurrence_value: string | null; // JSON config for recurrence details
+  recurrence_value: RecurrenceValue | null;
   assigned_to: string | null;
   created_by: string;
   status: TaskStatus;
+  due_date: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -59,6 +69,7 @@ export interface TaskReview {
   status: ReviewStatus;
   comment: string | null;
   points_awarded: number | null;
+  earned_by: string | null;
   created_at: string;
 }
 
@@ -69,7 +80,7 @@ export interface Reward {
   description: string | null;
   cost_points: number | null; // null for milestone type
   reward_type: RewardType;
-  milestone_condition: string | null; // JSON config for milestone
+  milestone_condition: Record<string, unknown> | null; // JSON config for milestone
   created_by: string;
   is_active: boolean;
   created_at: string;
@@ -92,6 +103,7 @@ export interface ShoppingItem {
   assigned_to: string | null;
   is_purchased: boolean;
   purchased_by: string | null;
+  purchased_at: string | null;
   created_at: string;
 }
 

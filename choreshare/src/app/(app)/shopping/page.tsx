@@ -1,0 +1,173 @@
+"use client";
+
+import { useCallback, useState } from "react";
+import { Check, Plus, Trash2, UserRound } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
+import { useLiveQuery } from "@/lib/supabase/realtime";
+import type { ShoppingItem } from "@/types/database";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { useFamily } from "@/components/family-provider";
+
+export default function ShoppingPage() {
+  const { me, partner, family, nameOf } = useFamily();
+  const [name, setName] = useState("");
+  const [showPurchased, setShowPurchased] = useState(false);
+
+  const fetchItems = useCallback(async () => {
+    const { data } = await createClient()
+      .from("shopping_items")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .returns<ShoppingItem[]>();
+    return data ?? [];
+  }, []);
+  const { data: serverItems, reload: load } = useLiveQuery(fetchItems, ["shopping_items"]);
+
+  // Local copy for optimistic updates; re-synced whenever the server data changes
+  const [items, setItems] = useState<ShoppingItem[]>([]);
+  const [synced, setSynced] = useState(serverItems);
+  if (serverItems !== synced) {
+    setSynced(serverItems);
+    setItems(serverItems ?? []);
+  }
+
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    const trimmed = name.trim();
+    if (!trimmed) return;
+    setName("");
+    await createClient().from("shopping_items").insert({ family_id: family.id, name: trimmed, added_by: me.id });
+    load();
+  }
+
+  async function update(id: string, patch: Partial<ShoppingItem>) {
+    setItems((prev) => prev.map((i) => (i.id === id ? { ...i, ...patch } : i)));
+    await createClient().from("shopping_items").update(patch).eq("id", id);
+    load();
+  }
+
+  async function togglePurchased(item: ShoppingItem) {
+    await update(
+      item.id,
+      item.is_purchased
+        ? { is_purchased: false, purchased_by: null, purchased_at: null }
+        : { is_purchased: true, purchased_by: me.id, purchased_at: new Date().toISOString() }
+    );
+  }
+
+  // Cycle 谁去买: nobody → me → partner → nobody
+  async function cycleAssignee(item: ShoppingItem) {
+    const order = [null, me.id, ...(partner ? [partner.id] : [])];
+    const next = order[(order.indexOf(item.assigned_to) + 1) % order.length];
+    await update(item.id, { assigned_to: next });
+  }
+
+  async function remove(id: string) {
+    setItems((prev) => prev.filter((i) => i.id !== id));
+    await createClient().from("shopping_items").delete().eq("id", id);
+  }
+
+  async function clearPurchased() {
+    if (!confirm("清空所有已购项目？")) return;
+    await createClient().from("shopping_items").delete().eq("is_purchased", true).eq("family_id", family.id);
+    load();
+  }
+
+  const todo = items.filter((i) => !i.is_purchased);
+  const done = items
+    .filter((i) => i.is_purchased)
+    .sort((a, b) => (b.purchased_at ?? "").localeCompare(a.purchased_at ?? ""));
+
+  return (
+    <div className="flex flex-col gap-4">
+      <h1 className="text-xl font-bold">购物清单</h1>
+
+      <form onSubmit={add} className="flex gap-2">
+        <Input placeholder="要买什么？" value={name} onChange={(e) => setName(e.target.value)} />
+        <Button type="submit" size="icon" className="h-10 w-10 shrink-0" aria-label="添加">
+          <Plus />
+        </Button>
+      </form>
+
+      <ul className="flex flex-col gap-2">
+        {todo.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">清单是空的 🛒</p>}
+        {todo.map((item) => (
+          <Row key={item.id} item={item} onToggle={() => togglePurchased(item)} onRemove={() => remove(item.id)}>
+            <button
+              onClick={() => cycleAssignee(item)}
+              className={cn(
+                "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
+                item.assigned_to ? "border-primary/40 bg-primary/10 text-primary" : "text-muted-foreground"
+              )}
+            >
+              <UserRound className="h-3 w-3" />
+              {item.assigned_to ? `${nameOf(item.assigned_to)}去买` : "谁去买？"}
+            </button>
+          </Row>
+        ))}
+      </ul>
+
+      {done.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <button className="text-sm font-semibold text-muted-foreground" onClick={() => setShowPurchased((v) => !v)}>
+              已购 ({done.length}) {showPurchased ? "▾" : "▸"}
+            </button>
+            {showPurchased && (
+              <Button size="sm" variant="ghost" onClick={clearPurchased}>
+                清空已购
+              </Button>
+            )}
+          </div>
+          {showPurchased && (
+            <ul className="flex flex-col gap-2 opacity-60">
+              {done.map((item) => (
+                <Row key={item.id} item={item} onToggle={() => togglePurchased(item)} onRemove={() => remove(item.id)}>
+                  <span className="text-xs text-muted-foreground">{nameOf(item.purchased_by)}买了</span>
+                </Row>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function Row({
+  item,
+  onToggle,
+  onRemove,
+  children,
+}: {
+  item: ShoppingItem;
+  onToggle: () => void;
+  onRemove: () => void;
+  children: React.ReactNode;
+}) {
+  const { nameOf } = useFamily();
+  return (
+    <li className="flex items-center gap-3 rounded-lg border bg-card p-3">
+      <button
+        onClick={onToggle}
+        aria-label={item.is_purchased ? "标记为待购" : "标记为已购"}
+        className={cn(
+          "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2",
+          item.is_purchased ? "border-success bg-success text-white" : "border-muted-foreground/40"
+        )}
+      >
+        {item.is_purchased && <Check className="h-4 w-4" />}
+      </button>
+      <div className="min-w-0 flex-1">
+        <p className={cn("truncate", item.is_purchased && "line-through")}>{item.name}</p>
+        <p className="text-xs text-muted-foreground">{nameOf(item.added_by)}添加</p>
+      </div>
+      {children}
+      <button onClick={onRemove} className="p-1 text-muted-foreground hover:text-destructive" aria-label="删除">
+        <Trash2 className="h-4 w-4" />
+      </button>
+    </li>
+  );
+}
