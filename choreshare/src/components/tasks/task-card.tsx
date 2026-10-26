@@ -23,13 +23,13 @@ export function TaskCard({ task }: { task: Task }) {
     <Link
       href={`/tasks/${task.id}`}
       className={cn(
-        "flex items-center gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50",
-        needsMyReview && "border-attention/50"
+        "flex items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-sm transition-colors hover:bg-accent/60",
+        needsMyReview && "border-rose/40 bg-muted"
       )}
     >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className={cn("truncate font-medium", task.status === "completed" && "text-muted-foreground line-through")}>
+          <span className={cn("truncate text-[18px] font-medium", task.status === "completed" && "text-muted-foreground line-through")}>
             {task.title}
           </span>
           <Badge className={STATUS_STYLE[task.status]}>{t(`status.${task.status}`)}</Badge>
@@ -67,7 +67,7 @@ export function TaskCard({ task }: { task: Task }) {
           {t("tasks.claim")}
         </Button>
       )}
-      {needsMyReview && <span className="text-xs font-medium text-attention">{t("tasks.goReview")}</span>}
+      {needsMyReview && <span className="shrink-0 text-sm italic text-attention">{t("tasks.goReview")}</span>}
     </Link>
   );
 }

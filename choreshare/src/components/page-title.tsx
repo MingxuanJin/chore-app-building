@@ -2,9 +2,10 @@
 
 import type { TKey } from "@/lib/i18n/translate";
 import { useI18n } from "./i18n-provider";
+import { PageHeader } from "./fawn";
 
-/** Translated <h1> for server-rendered pages */
+/** Translated page header for server-rendered pages */
 export function PageTitle({ k }: { k: TKey }) {
   const { t } = useI18n();
-  return <h1 className="text-xl font-bold">{t(k)}</h1>;
+  return <PageHeader eyebrow={t("deco.newTask")} title={t(k)} art="lilyPetal" />;
 }

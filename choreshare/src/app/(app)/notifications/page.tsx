@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { useFamily } from "@/components/family-provider";
 import { useNotifications } from "@/components/notifications-provider";
 import { useI18n } from "@/components/i18n-provider";
+import { EmptyNote, PageHeader } from "@/components/fawn";
 import { NOTIFICATION_ICON, notificationHref, notificationSubject, notificationText, timeAgo } from "@/lib/notifications";
 
 export default function NotificationsPage() {
@@ -16,19 +17,23 @@ export default function NotificationsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">{t("notifications.title")}</h1>
-        {unread > 0 && (
-          <Button size="sm" variant="ghost" onClick={markAllRead}>
-            <CheckCheck /> {t("notifications.markAll")}
-          </Button>
-        )}
-      </div>
+      <PageHeader
+        eyebrow={t("deco.notifications")}
+        title={t("notifications.title")}
+        art="clock"
+        action={
+          unread > 0 && (
+            <Button size="sm" variant="outline" onClick={markAllRead}>
+              <CheckCheck /> {t("notifications.markAll")}
+            </Button>
+          )
+        }
+      />
 
       {loading ? (
         <p className="py-8 text-center text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : notifications.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">{t("notifications.empty")}</p>
+        <EmptyNote art="asciiRabbit">{t("notifications.empty")}</EmptyNote>
       ) : (
         <ul className="flex flex-col gap-2">
           {notifications.map((n) => {
@@ -39,14 +44,14 @@ export default function NotificationsPage() {
                   href={notificationHref(n)}
                   onClick={() => !n.read_at && markRead([n.id])}
                   className={cn(
-                    "flex items-start gap-3 rounded-lg border p-3 text-sm transition-colors hover:bg-accent/50",
-                    n.read_at ? "bg-card text-muted-foreground" : "border-primary/30 bg-primary/5"
+                    "flex items-start gap-3 rounded-lg border p-3 transition-colors hover:bg-accent/60",
+                    n.read_at ? "bg-card text-muted-foreground" : "border-blush bg-muted shadow-sm"
                   )}
                 >
                   <span
                     className={cn(
                       "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                      n.read_at ? "bg-muted" : "bg-primary/10 text-primary"
+                      n.read_at ? "bg-muted" : "bg-primary text-foreground"
                     )}
                   >
                     <Icon className="h-4 w-4" />
@@ -57,7 +62,7 @@ export default function NotificationsPage() {
                     </span>
                     <span className="text-xs text-muted-foreground">{timeAgo(t, dateLocale, n.created_at)}</span>
                   </span>
-                  {!n.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-primary" aria-label={t("notifications.unread")} />}
+                  {!n.read_at && <span className="mt-1.5 h-2 w-2 shrink-0 rounded-full bg-rose" aria-label={t("notifications.unread")} />}
                 </Link>
               </li>
             );

@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Home, Link2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { Art } from "@/components/fawn";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,9 +36,10 @@ export function SetupForm({ name }: { name: string }) {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-4 p-4">
-      <div className="mb-2">
-        <h1 className="text-2xl font-bold">{name ? t("setup.hello", { name }) : t("setup.helloNoName")}</h1>
-        <p className="text-muted-foreground">{t("setup.intro")}</p>
+      <div className="mb-2 flex flex-col items-center text-center">
+        <Art name="lily" className="w-32" priority />
+        <h1 className="font-serif text-[32px] font-medium leading-[38px]">{name ? t("setup.hello", { name }) : t("setup.helloNoName")}</h1>
+        <p className="font-serif text-lg italic text-muted-foreground">{t("setup.intro")}</p>
       </div>
 
       <Card>

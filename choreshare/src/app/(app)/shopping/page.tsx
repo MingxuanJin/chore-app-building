@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { useFamily } from "@/components/family-provider";
 import { useI18n } from "@/components/i18n-provider";
+import { EmptyNote, PageHeader } from "@/components/fawn";
 
 export default function ShoppingPage() {
   const { me, partner, family, nameOf } = useFamily();
@@ -84,24 +85,24 @@ export default function ShoppingPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">{t("shopping.title")}</h1>
+      <PageHeader eyebrow={t("deco.shopping")} title={t("shopping.title")} art="asciiRabbit" />
 
       <form onSubmit={add} className="flex gap-2">
         <Input placeholder={t("shopping.placeholder")} value={name} onChange={(e) => setName(e.target.value)} />
-        <Button type="submit" size="icon" className="h-10 w-10 shrink-0" aria-label={t("common.add")}>
+        <Button type="submit" size="icon" className="h-11 w-11 shrink-0" aria-label={t("common.add")}>
           <Plus />
         </Button>
       </form>
 
       <ul className="flex flex-col gap-2">
-        {todo.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t("shopping.empty")}</p>}
+        {todo.length === 0 && <EmptyNote art="asciiLily">{t("shopping.empty")}</EmptyNote>}
         {todo.map((item) => (
           <Row key={item.id} item={item} onToggle={() => togglePurchased(item)} onRemove={() => remove(item.id)}>
             <button
               onClick={() => cycleAssignee(item)}
               className={cn(
                 "inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs",
-                item.assigned_to ? "border-primary/40 bg-primary/10 text-primary" : "text-muted-foreground"
+                item.assigned_to ? "border-transparent bg-blush text-foreground" : "text-muted-foreground"
               )}
             >
               <UserRound className="h-3 w-3" />
@@ -114,7 +115,7 @@ export default function ShoppingPage() {
       {done.length > 0 && (
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <button className="text-sm font-semibold text-muted-foreground" onClick={() => setShowPurchased((v) => !v)}>
+            <button className="font-serif text-lg font-semibold text-muted-foreground" onClick={() => setShowPurchased((v) => !v)}>
               {t("shopping.purchased", { n: done.length })} {showPurchased ? "▾" : "▸"}
             </button>
             {showPurchased && (
@@ -152,13 +153,13 @@ function Row({
   const { nameOf } = useFamily();
   const { t } = useI18n();
   return (
-    <li className="flex items-center gap-3 rounded-lg border bg-card p-3">
+    <li className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-sm">
       <button
         onClick={onToggle}
         aria-label={item.is_purchased ? t("shopping.markTodo") : t("shopping.markPurchased")}
         className={cn(
           "flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2",
-          item.is_purchased ? "border-success bg-success text-white" : "border-muted-foreground/40"
+          item.is_purchased ? "border-success/40 bg-sage text-success" : "border-input"
         )}
       >
         {item.is_purchased && <Check className="h-4 w-4" />}

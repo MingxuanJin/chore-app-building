@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { PartyPopper } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useLiveQuery, useRealtime } from "@/lib/supabase/realtime";
 import { browserTimeZone, describeMilestone } from "@/lib/milestones";
@@ -9,6 +8,7 @@ import type { Redemption, Reward } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import { useFamily } from "./family-provider";
 import { useI18n } from "./i18n-provider";
+import { Art } from "./fawn";
 
 type Unlock = Redemption & { rewards: Pick<Reward, "name" | "milestone_condition"> | null };
 
@@ -54,15 +54,18 @@ export function MilestoneWatcher() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-6" role="dialog" aria-modal="true">
-      <div className="flex w-full max-w-sm flex-col items-center gap-3 rounded-2xl bg-card p-6 text-center shadow-xl">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10">
-          <PartyPopper className="h-8 w-8 text-primary" />
-        </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/30 p-6" role="dialog" aria-modal="true">
+      <div className="relative flex w-full max-w-sm flex-col items-center gap-3 overflow-hidden rounded-2xl border bg-card p-6 pt-4 text-center shadow-xl">
+        <Art name="swag" className="absolute inset-x-0 top-0 w-full" />
+        <span className="relative mt-6 flex h-36 w-36 items-center justify-center">
+          <Art name="doily" className="absolute inset-0 w-36" />
+          <Art name="bow" className="relative w-20" />
+        </span>
+        <p className="font-script text-[36px] leading-10 text-rose">{t("deco.milestone")}</p>
         <p className="text-sm text-muted-foreground">
           {t("milestones.popupReached", { condition: describeMilestone(t, current.rewards?.milestone_condition ?? null) })}
         </p>
-        <h2 className="text-2xl font-bold">🎉 {current.rewards?.name}</h2>
+        <h2 className="font-serif text-[26px] font-medium leading-8">{current.rewards?.name}</h2>
         <p className="text-sm text-muted-foreground">{t("milestones.popupNotified", { name: partner?.name || t("common.partner") })}</p>
         <Button className="mt-2 w-full" size="lg" disabled={closing} onClick={dismiss}>
           {t("milestones.popupAccept")}

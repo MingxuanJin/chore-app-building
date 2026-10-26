@@ -21,6 +21,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/input";
 import { useFamily } from "@/components/family-provider";
 import { useI18n } from "@/components/i18n-provider";
+import { LaceDivider, SectionTitle } from "@/components/fawn";
 import { translateError } from "@/lib/i18n/errors";
 import { DifficultyStars } from "@/components/tasks/difficulty";
 import { TimerDisplay } from "@/components/tasks/timer";
@@ -81,7 +82,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       {/* Header */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
-          <h1 className="text-xl font-bold">{task.title}</h1>
+          <h1 className="font-serif text-[32px] font-medium leading-[38px]">{task.title}</h1>
           <div className="mt-1 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
             <Badge className={STATUS_STYLE[task.status]}>{t(`status.${task.status}`)}</Badge>
             <DifficultyStars value={task.difficulty} />
@@ -244,7 +245,8 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
       {/* History */}
       {(sessions.length > 0 || reviews.length > 0) && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-muted-foreground">{t("taskDetail.history")}</h2>
+          <LaceDivider />
+          <SectionTitle>{t("taskDetail.history")}</SectionTitle>
           <ul className="flex flex-col gap-1 text-sm">
             {[
               ...sessions.map((s) => ({
@@ -265,7 +267,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
             ]
               .sort((a, b) => b.at.localeCompare(a.at))
               .map((e, i) => (
-                <li key={i} className="flex justify-between gap-2 rounded-md bg-muted/50 px-3 py-2">
+                <li key={i} className="flex justify-between gap-2 rounded-sm bg-muted px-3 py-2">
                   <span>{e.text}</span>
                   <span className="shrink-0 text-xs text-muted-foreground">
                     {new Date(e.at).toLocaleString(dateLocale, { month: "numeric", day: "numeric", hour: "2-digit", minute: "2-digit" })}
@@ -281,7 +283,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
 
 function Info({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
   return (
-    <div className="flex items-center gap-2 rounded-md bg-muted/50 px-3 py-2">
+    <div className="flex items-center gap-2 rounded-sm bg-muted px-3 py-2">
       <Icon className="h-4 w-4 text-muted-foreground" />
       <span className="text-muted-foreground">{label}</span>
       <span className="ml-auto font-medium">{value}</span>

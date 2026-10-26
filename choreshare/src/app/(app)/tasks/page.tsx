@@ -9,6 +9,7 @@ import { useFamily } from "@/components/family-provider";
 import { useTasks } from "@/components/tasks/use-tasks";
 import { TaskCard } from "@/components/tasks/task-card";
 import { useI18n } from "@/components/i18n-provider";
+import { EmptyNote, PageHeader } from "@/components/fawn";
 
 const FILTERS = [
   { key: "all", label: "common.all" },
@@ -43,12 +44,16 @@ export default function TasksPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">{t("tasks.title")}</h1>
-        <Link href="/tasks/new" className={buttonVariants({ size: "sm" })}>
-          <Plus /> {t("tasks.new")}
-        </Link>
-      </div>
+      <PageHeader
+        eyebrow={t("deco.tasks")}
+        title={t("tasks.title")}
+        art="lily"
+        action={
+          <Link href="/tasks/new" className={buttonVariants({ size: "sm" })}>
+            <Plus /> {t("tasks.new")}
+          </Link>
+        }
+      />
 
       <div className="-mx-4 flex gap-2 overflow-x-auto px-4">
         {FILTERS.map((f) => (
@@ -56,8 +61,8 @@ export default function TasksPage() {
             key={f.key}
             onClick={() => setFilter(f.key)}
             className={cn(
-              "shrink-0 rounded-full border px-3 py-1 text-sm",
-              filter === f.key ? "border-primary bg-primary text-primary-foreground" : "bg-background"
+              "shrink-0 rounded-full border px-4 py-1 text-sm transition-colors",
+              filter === f.key ? "border-transparent bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent"
             )}
           >
             {t(f.label)}
@@ -68,7 +73,7 @@ export default function TasksPage() {
       {loading ? (
         <p className="py-8 text-center text-sm text-muted-foreground">{t("common.loading")}</p>
       ) : shown.length === 0 ? (
-        <p className="py-8 text-center text-sm text-muted-foreground">{t("common.empty")}</p>
+        <EmptyNote art="asciiLily">{t("common.empty")}</EmptyNote>
       ) : (
         <div className="flex flex-col gap-2">
           {shown.map((t) => (

@@ -11,10 +11,11 @@ import { TaskCard } from "@/components/tasks/task-card";
 import { todayISO } from "@/lib/tasks";
 import { useI18n } from "@/components/i18n-provider";
 import type { Task } from "@/types/database";
+import { Art, LaceDivider, SectionTitle } from "@/components/fawn";
 
 export default function DashboardPage() {
   const { me, partner } = useFamily();
-  const { t } = useI18n();
+  const { t, dateLocale } = useI18n();
   const { tasks, loading } = useTasks(10);
   const { points } = usePoints();
   const today = todayISO();
@@ -28,12 +29,20 @@ export default function DashboardPage() {
   const doneToday = tasks.filter((t) => t.status === "completed" && t.updated_at.slice(0, 10) === today);
 
   return (
-    <div className="flex flex-col gap-5">
-      <div>
-        <h1 className="text-2xl font-bold">{me.name ? t("dashboard.hello", { name: me.name }) : t("setup.helloNoName")}</h1>
-        <p className="text-sm text-muted-foreground">
-          {mine.length + open.length === 0 ? t("dashboard.allDone") : t("dashboard.remaining", { n: mine.length + open.length })}
-        </p>
+    <div className="flex flex-col gap-6">
+      <div className="relative">
+        <Art name="asciiFawn" className="absolute -top-2 right-0 w-32 opacity-80" priority />
+        <div className="relative pt-2">
+          <p suppressHydrationWarning className="font-mono text-[11px] uppercase leading-4 tracking-[0.14em] text-muted-foreground">
+            {new Date().toLocaleDateString(dateLocale, { weekday: "short", day: "numeric", month: "short" })} · {t("deco.home")}
+          </p>
+          <h1 className="font-serif text-[32px] font-medium leading-[38px]">
+            {me.name ? t("dashboard.hello", { name: me.name }) : t("setup.helloNoName")}
+          </h1>
+          <p className="font-serif text-lg italic text-muted-foreground">
+            {mine.length + open.length === 0 ? t("dashboard.allDone") : t("dashboard.remaining", { n: mine.length + open.length })}
+          </p>
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -42,13 +51,15 @@ export default function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-2 gap-3">
-        <Link href="/tasks/new" className={buttonVariants({ variant: "outline" })}>
+        <Link href="/tasks/new" className={buttonVariants()}>
           <Plus /> {t("dashboard.newTask")}
         </Link>
         <Link href="/shopping" className={buttonVariants({ variant: "outline" })}>
           <ShoppingCart /> {t("dashboard.shoppingList")}
         </Link>
       </div>
+
+      <LaceDivider />
 
       {loading ? (
         <p className="py-8 text-center text-sm text-muted-foreground">{t("common.loading")}</p>
@@ -66,10 +77,10 @@ export default function DashboardPage() {
 
 function PointsCard({ label, value, highlight }: { label: string; value: number | string; highlight?: boolean }) {
   return (
-    <Card className={highlight ? "bg-primary text-primary-foreground" : ""}>
+    <Card lace blush={highlight}>
       <CardContent className="pt-4">
-        <p className={`text-xs ${highlight ? "opacity-80" : "text-muted-foreground"}`}>{label}</p>
-        <p className="text-3xl font-bold tabular-nums">{value}</p>
+        <p className="truncate text-sm text-muted-foreground">{label}</p>
+        <p className="font-serif text-[40px] font-medium leading-[46px] lining-nums tabular-nums">{value}</p>
       </CardContent>
     </Card>
   );
@@ -81,15 +92,15 @@ function Section({ title, tasks, empty, accent }: { title: string; tasks: Task[]
   return (
     <section className="flex flex-col gap-2">
       <div className="flex items-center justify-between">
-        <h2 className={`text-sm font-semibold ${accent ? "text-attention" : "text-muted-foreground"}`}>
-          {title} {tasks.length > 0 && `(${tasks.length})`}
-        </h2>
-        <Link href="/tasks" className="flex items-center text-xs text-muted-foreground">
-          {t("common.all")} <ChevronRight className="h-3 w-3" />
+        <SectionTitle count={tasks.length} className={accent ? "text-attention" : undefined}>
+          {title}
+        </SectionTitle>
+        <Link href="/tasks" className="flex items-center text-sm italic text-muted-foreground hover:text-foreground">
+          {t("common.all")} <ChevronRight className="h-3.5 w-3.5" />
         </Link>
       </div>
       {tasks.length === 0 ? (
-        <p className="rounded-lg border border-dashed p-4 text-center text-sm text-muted-foreground">{empty}</p>
+        <p className="fl-note font-serif text-lg italic text-muted-foreground">{empty}</p>
       ) : (
         tasks.map((t) => <TaskCard key={t.id} task={t} />)
       )}

@@ -65,7 +65,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
       {children}
       {toast && (
         <div className="fixed inset-x-0 top-16 z-40 flex justify-center px-4">
-          <div className="flex w-full max-w-md items-center gap-3 rounded-lg border bg-card p-3 shadow-lg">
+          <div className="flex w-full max-w-md items-center gap-3 rounded-lg border bg-card p-3 shadow-md">
             <Link
               href={notificationHref(toast)}
               onClick={() => {
@@ -90,7 +90,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 function ToastIcon({ type }: { type: AppNotification["type"] }) {
   const Icon = NOTIFICATION_ICON[type];
   return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-foreground">
       <Icon className="h-4 w-4" />
     </span>
   );

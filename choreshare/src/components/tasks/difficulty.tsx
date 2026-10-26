@@ -11,7 +11,8 @@ export function DifficultyStars({ value, className }: { value: number; className
       {[1, 2, 3, 4, 5].map((i) => (
         <Star
           key={i}
-          className={cn("h-3.5 w-3.5", i <= value ? "fill-warning text-warning" : "text-muted-foreground/30")}
+          className={cn("h-3.5 w-3.5", i <= value ? "fill-primary text-rose/70" : "text-muted-foreground/30")}
+          strokeWidth={1.5}
         />
       ))}
     </span>
@@ -24,7 +25,7 @@ export function DifficultyPicker({ value, onChange }: { value: number; onChange:
     <div className="flex gap-1">
       {[1, 2, 3, 4, 5].map((i) => (
         <button key={i} type="button" onClick={() => onChange(i)} aria-label={t("tasks.difficultyN", { n: i })} className="p-1">
-          <Star className={cn("h-7 w-7", i <= value ? "fill-warning text-warning" : "text-muted-foreground/30")} />
+          <Star className={cn("h-7 w-7", i <= value ? "fill-primary text-rose/70" : "text-muted-foreground/30")} strokeWidth={1.5} />
         </button>
       ))}
     </div>

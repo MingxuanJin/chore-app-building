@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { useFamily } from "@/components/family-provider";
 import { usePoints } from "@/components/use-points";
 import { useI18n } from "@/components/i18n-provider";
+import { PageHeader } from "@/components/fawn";
 import { GroupedBars, Meter, TrendLines, type Series } from "@/components/stats/charts";
 import { Button } from "@/components/ui/button";
 
@@ -184,7 +185,7 @@ export default function StatsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">{t("stats.title")}</h1>
+      <PageHeader eyebrow={t("deco.stats")} title={t("stats.title")} art="asciiLily" />
 
       <div className="flex flex-wrap items-center gap-2">
         {(
@@ -198,8 +199,8 @@ export default function StatsPage() {
             key={key}
             onClick={() => setRange(key)}
             className={cn(
-              "rounded-full border px-3 py-1 text-sm",
-              range === key ? "border-primary bg-primary text-primary-foreground" : "bg-background"
+              "rounded-full border px-4 py-1 text-sm transition-colors",
+              range === key ? "border-transparent bg-primary text-primary-foreground" : "bg-card text-muted-foreground hover:bg-accent"
             )}
           >
             {t(label)}
@@ -218,7 +219,7 @@ export default function StatsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("stats.share")}</CardTitle>
+          <CardTitle>{t("stats.share")}</CardTitle>
           <p className="text-xs text-muted-foreground">{t("stats.shareHint")}</p>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
@@ -247,7 +248,7 @@ export default function StatsPage() {
                   <span className="h-2 w-2 rounded-full" style={{ background: p.color }} />
                   {p.name}
                 </span>
-                <span className="font-semibold tabular-nums">{points[p.id]?.balance ?? 0}</span>
+                <span className="font-semibold lining-nums tabular-nums">{points[p.id]?.balance ?? 0}</span>
               </p>
             ))}
           </CardContent>
@@ -256,7 +257,7 @@ export default function StatsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("stats.dailyChart")}</CardTitle>
+          <CardTitle>{t("stats.dailyChart")}</CardTitle>
         </CardHeader>
         <CardContent>
           <GroupedBars data={stats.daily} xKey="day" series={people} format={(v) => t("stats.tasksUnit", { n: v })} />
@@ -265,7 +266,7 @@ export default function StatsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("stats.timeTrend")}</CardTitle>
+          <CardTitle>{t("stats.timeTrend")}</CardTitle>
         </CardHeader>
         <CardContent>
           <TrendLines data={stats.trend} xKey="day" series={people} format={(v) => formatMinutes(t, v)} />
@@ -274,7 +275,7 @@ export default function StatsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("stats.difficultyChart")}</CardTitle>
+          <CardTitle>{t("stats.difficultyChart")}</CardTitle>
           <p className="text-xs text-muted-foreground">{t("stats.difficultyHint")}</p>
         </CardHeader>
         <CardContent>
@@ -284,7 +285,7 @@ export default function StatsPage() {
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">{t("stats.ledger")}</CardTitle>
+          <CardTitle>{t("stats.ledger")}</CardTitle>
         </CardHeader>
         <CardContent>
           {stats.ledger.length === 0 ? (
@@ -303,7 +304,7 @@ export default function StatsPage() {
                       {nameOf(e.user)} · {new Date(e.at).toLocaleDateString(dateLocale, { month: "short", day: "numeric" })}
                     </span>
                   </span>
-                  <span className="font-semibold tabular-nums">{e.delta > 0 ? `+${e.delta}` : `−${-e.delta}`}</span>
+                  <span className="font-semibold lining-nums tabular-nums">{e.delta > 0 ? `+${e.delta}` : `−${-e.delta}`}</span>
                 </li>
               ))}
             </ul>

@@ -161,7 +161,7 @@
 - ✅ PWA（Android 原生包装待定）
 - ✅ 多语言切换：中文 / English / Italiano（见第 7 节）
 - ✅ 数据导出（CSV：任务记录、积分明细）
-- ✅ 主题切换（跟随系统 / 浅色 / 深色）
+- ~~主题切换（跟随系统 / 浅色 / 深色）~~ 已移除：视觉改用 Fawnlight design system，暂时只用浅色主题
 - ✅ 重复任务按周期自动生成（打开 App + 每小时定时检查）
 
 ---
@@ -221,7 +221,7 @@ ShoppingItem { id, family_id, name, added_by, assigned_to,
 
 1. **手机推送尚未在真机上验证收发**：线上 `/api/push` 已验证可用（3 个环境变量都已生效）。若收不到，在 Supabase SQL Editor 查 `select status_code, content from net._http_response order by created desc limit 5;`
 2. **pg_cron 是否启用未确认**：007 迁移已运行，但没确认有没有出现 `pg_cron not available` 提示。没有 pg_cron 时，「每小时自动生成重复任务」不生效，打开 App 时生成的逻辑照常工作。可在 SQL Editor 查 `select * from cron.job;` 确认。
-3. 深色模式下登录后的页面、CSV 导出文件，尚待使用者检查。
+3. 换成 Fawnlight 风格后，登录后的各个页面、CSV 导出文件，尚待使用者检查。
 4. Android 原生包装（Capacitor）：先用 PWA，体验不够再做。
 
 ### 数据库迁移（全部已在 Supabase 运行）
@@ -255,8 +255,14 @@ ShoppingItem { id, family_id, name, added_by, assigned_to,
 - **改积分 / 状态的关键操作走数据库 RPC**（security definer），不让客户端直接写，例如确认任务、兑换奖励。
 - **多语言**：`lib/i18n/dict/zh.ts` 是源字典，`en.ts` / `it.ts` 的键必须与它完全一致（TypeScript 会检查）。组件里用 `const { t, dateLocale } = useI18n()`，日期用 `dateLocale` 格式化。**新增文案必须三种语言都加**。数据库错误用错误码，在 `lib/i18n/errors.ts` 里翻译。
 - **通知**：新增类型需要同时改 ① 数据库触发器 ② `types/database.ts` 的 `NotificationType` ③ `lib/notifications.ts` 的图标 ④ 三个字典的 `notifications.*`。推送文案和站内文案共用同一套渲染。
-- **颜色**：使用语义色变量（`primary` / `success` / `warning` / `attention` / `info` / `destructive`，定义在 `app/globals.css`，含深色值），不要写死 `orange-600` 这类颜色。图表的两人配色是 `--series-me` / `--series-partner`。
-- **主题**：按设备存在 cookie `theme`；语言：`profiles.locale` > cookie `locale` > 浏览器语言 > 英文。
+- **颜色**：使用语义色变量（`primary` / `success` / `warning` / `attention` / `info` / `destructive`，定义在 `app/globals.css`，取值来自 Fawnlight 色板），不要写死 `orange-600` 这类颜色。图表的两人配色是 `--series-me`（玫瑰粉 primary-600）/ `--series-partner`（薰衣草紫 lavender-700），已用色弱校验。
+- **视觉风格**：遵循使用者在 Claude 里建的 design system **Fawnlight**（https://claude.ai/artifact/LaLDVyPyQcDNXg9tSFPQtN，蕾丝、百合、小动物的「纪念品」风）。改动前先读它的 README，它会更新。
+  - 只用浅色「Lace 蕾丝白」主题（Fawnlight 也有深色「Candlelight 烛光」，App 暂不启用）。
+  - 使用者**不喜欢大面积的深玫瑰色**：按钮等填充用 `rose-300`（`bg-primary`，配 ink 文字）；深色 `rose-600`（`text-rose`）只用于小字、焦点环。
+  - 字体：标题 Cormorant Garamond（`font-serif`，h1–h3 自动），正文 EB Garamond（`font-sans`），标签/日期 Courier Prime（`font-mono`），品牌花体 Pinyon Script（`font-script`，只写英文、≥28px），中文回退 Noto Serif SC。数字用 `lining-nums tabular-nums`。
+  - 组件：按钮是胶囊形；卡片可加 `lace`（底部扇贝蕾丝）/`blush`（雾粉底）；状态标签是打字机字体＋浅色底；`components/fawn.tsx` 提供 `Art`（装饰素材）、`PageHeader`、`SectionTitle`、`LaceDivider`、`EmptyNote`；`ui/segmented.tsx` 是分段切换。
+  - 装饰素材在 `public/fawnlight/`（从 design system 导出转成 webp）。规则：一屏一个主角（小动物或小物），同屏最多四件素材，不用 emoji。页面上方的英文小标在字典的 `deco.*`（三种语言相同）。
+- **语言**：`profiles.locale` > cookie `locale` > 浏览器语言 > 英文。
 - **服务端入口**：`proxy.ts`（Next 16 的 middleware）会把未登录用户重定向到 `/login`，公开路径为 `/login`、`/auth/*`、`/api/push`。
 - **验证**：每次改动后跑 `npx tsc --noEmit && npx eslint . && npm run build`（在 `choreshare/` 目录下）。
 
@@ -266,4 +272,5 @@ ShoppingItem { id, family_id, name, added_by, assigned_to,
 - 重复任务：每个周期独立生成，没做的那次显示为逾期；不会补生成错过的多个周期。要停止，就把最新那次改成「不重复」。
 - 里程碑每人分开计算；月度完成率按上个自然月结算；连续天数和月度两类只统计创建里程碑之后的情况。
 - 统计页：完成率用进度条、难度分布用分组柱状图（没用 PRD 原写的环形图 / 饼图，以便看清公平性）。
-- 语言和推送按人设置；主题按设备设置。
+- 语言和推送按人设置。
+- 2026-10-26：整体视觉改为 Fawnlight，去掉了深色模式和文案里的 emoji。

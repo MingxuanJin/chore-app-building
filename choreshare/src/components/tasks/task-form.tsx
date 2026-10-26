@@ -129,7 +129,7 @@ export function TaskForm({ task }: { task?: Task }) {
                 onClick={() => setDays((d) => (d.includes(i) ? d.filter((x) => x !== i) : [...d, i]))}
                 className={cn(
                   "h-9 w-9 rounded-full border text-sm",
-                  days.includes(i) ? "border-primary bg-primary text-primary-foreground" : "bg-background"
+                  days.includes(i) ? "border-transparent bg-primary text-primary-foreground" : "bg-card"
                 )}
               >
                 {label}
@@ -162,8 +162,8 @@ export function TaskForm({ task }: { task?: Task }) {
               disabled={!canReassign || (mode === "partner" && !partner)}
               onClick={() => setAssign(mode)}
               className={cn(
-                "h-10 rounded-md border text-sm disabled:opacity-40",
-                assign === mode ? "border-primary bg-primary/10 font-medium text-primary" : "bg-background"
+                "min-h-11 rounded-full border text-sm disabled:opacity-40",
+                assign === mode ? "border-transparent bg-primary font-medium text-primary-foreground" : "bg-card"
               )}
             >
               {label}

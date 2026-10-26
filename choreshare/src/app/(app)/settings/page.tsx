@@ -9,9 +9,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input, Label } from "@/components/ui/input";
 import { useFamily } from "@/components/family-provider";
 import { useI18n } from "@/components/i18n-provider";
+import { PageHeader } from "@/components/fawn";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { PushToggle } from "@/components/push-toggle";
-import { ThemeSwitcher } from "@/components/theme-switcher";
 import { DataExport } from "@/components/data-export";
 
 export default function SettingsPage() {
@@ -43,7 +43,7 @@ export default function SettingsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <h1 className="text-xl font-bold">{t("settings.title")}</h1>
+      <PageHeader eyebrow={t("deco.settings")} title={t("settings.title")} art="angelBunny" />
 
       <Card>
         <CardHeader>
@@ -55,15 +55,6 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{t("settings.appearance")}</CardTitle>
-          <p className="text-xs text-muted-foreground">{t("settings.appearanceHint")}</p>
-        </CardHeader>
-        <CardContent>
-          <ThemeSwitcher />
-        </CardContent>
-      </Card>
 
       <Card>
         <CardHeader>
@@ -88,7 +79,7 @@ export default function SettingsPage() {
             <>
               <p className="text-muted-foreground">{t("settings.shareCode")}</p>
               <div className="flex items-center gap-2">
-                <code className="flex-1 rounded-md bg-muted px-3 py-2 text-center font-mono text-2xl tracking-[0.3em]">
+                <code className="flex-1 rounded-xs bg-kraft px-3 py-2 text-center font-mono text-2xl tracking-[0.3em] outline-[5px] outline-dotted -outline-offset-2 outline-card">
                   {family.pair_code}
                 </code>
                 <Button

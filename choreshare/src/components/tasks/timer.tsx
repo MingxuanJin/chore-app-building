@@ -19,5 +19,5 @@ export function TimerDisplay({ sessions }: { sessions: TaskSession[] }) {
   }, [running]);
 
   const total = sessions.reduce((sum, s) => sum + sessionSeconds(s, now), 0);
-  return <div className="font-mono text-5xl font-semibold tabular-nums tracking-tight">{formatDuration(total)}</div>;
+  return <div className="font-mono text-5xl font-semibold lining-nums tabular-nums tracking-tight">{formatDuration(total)}</div>;
 }

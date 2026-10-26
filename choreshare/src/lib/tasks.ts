@@ -1,13 +1,14 @@
 import type { RecurrenceType, RecurrenceValue, Task, TaskSession, TaskStatus } from "@/types/database";
 import type { TFunction } from "@/lib/i18n/translate";
 
+// Fawnlight tags: soft fills behind ink text
 export const STATUS_STYLE: Record<TaskStatus, string> = {
-  pending: "border-warning/40 bg-warning/10 text-warning",
-  claimed: "border-primary/30 bg-primary/10 text-primary",
-  in_progress: "border-info/30 bg-info/10 text-info",
-  review: "border-attention/30 bg-attention/10 text-attention",
-  completed: "border-success/30 bg-success/10 text-success",
-  rejected: "border-destructive/30 bg-destructive/10 text-destructive",
+  pending: "bg-kraft",
+  claimed: "bg-blush",
+  in_progress: "bg-silver",
+  review: "bg-primary",
+  completed: "bg-sage",
+  rejected: "bg-danger-soft text-destructive",
 };
 
 /** Short weekday names, index 0 = Sunday */

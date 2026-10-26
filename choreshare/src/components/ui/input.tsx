@@ -2,10 +2,10 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 const fieldBase =
-  "flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50";
+  "flex w-full rounded-sm border border-input bg-card px-4 py-2 text-base placeholder:italic placeholder:text-muted-foreground focus-visible:border-rose focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:cursor-not-allowed disabled:opacity-50";
 
 export function Input({ className, ...props }: React.InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cn(fieldBase, "h-10", className)} {...props} />;
+  return <input className={cn(fieldBase, "h-11", className)} {...props} />;
 }
 
 export function Textarea({ className, ...props }: React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
@@ -13,9 +13,9 @@ export function Textarea({ className, ...props }: React.TextareaHTMLAttributes<H
 }
 
 export function Select({ className, ...props }: React.SelectHTMLAttributes<HTMLSelectElement>) {
-  return <select className={cn(fieldBase, "h-10", className)} {...props} />;
+  return <select className={cn(fieldBase, "h-11", className)} {...props} />;
 }
 
 export function Label({ className, ...props }: React.LabelHTMLAttributes<HTMLLabelElement>) {
-  return <label className={cn("text-sm font-medium leading-none", className)} {...props} />;
+  return <label className={cn("text-sm leading-none text-muted-foreground", className)} {...props} />;
 }

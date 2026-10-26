@@ -13,6 +13,8 @@ import { cn } from "@/lib/utils";
 import { useFamily } from "@/components/family-provider";
 import { usePoints } from "@/components/use-points";
 import { useI18n } from "@/components/i18n-provider";
+import { Art, EmptyNote, PageHeader, SectionTitle } from "@/components/fawn";
+import { Segmented } from "@/components/ui/segmented";
 import { translateError } from "@/lib/i18n/errors";
 
 type Tab = "redeem" | "milestone";
@@ -102,25 +104,32 @@ export default function RewardsPage() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-bold">{t("rewards.title")}</h1>
-        <Button size="sm" onClick={() => setShowForm((v) => !v)}>
-          <Plus /> {t("rewards.newReward")}
-        </Button>
-      </div>
+      <PageHeader
+        eyebrow={t("deco.rewards")}
+        title={t("rewards.title")}
+        art="piano"
+        action={
+          <Button size="sm" onClick={() => setShowForm((v) => !v)}>
+            <Plus /> {t("rewards.newReward")}
+          </Button>
+        }
+      />
 
-      <Card className="bg-primary text-primary-foreground">
-        <CardContent className="flex items-center justify-between pt-4">
-          <span>{t("rewards.myPoints")}</span>
-          <span className="text-3xl font-bold tabular-nums">{balance}</span>
+      <Card lace blush>
+        <CardContent className="flex items-center justify-between gap-4 py-3">
+          <span className="font-serif text-xl italic">{t("rewards.myPoints")}</span>
+          <span className="relative flex h-28 w-28 shrink-0 items-center justify-center">
+            <Art name="doily" className="absolute inset-0 w-28" />
+            <span className="relative font-serif text-[34px] font-medium lining-nums tabular-nums">{balance}</span>
+          </span>
         </CardContent>
       </Card>
 
       {owedByMe.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-attention">{t("rewards.owedByMe")}</h2>
+          <SectionTitle className="text-attention">{t("rewards.owedByMe")}</SectionTitle>
           {owedByMe.map((r) => (
-            <div key={r.id} className="flex items-center gap-2 rounded-lg border border-attention/40 bg-attention/5 p-3 text-sm">
+            <div key={r.id} className="flex items-center gap-2 rounded-xs bg-kraft p-3 shadow-sm">
               <span className="flex-1">
                 {t(r.period_key ? "rewards.unlockedThing" : "rewards.redeemedThing", {
                   name: nameOf(r.user_id),
@@ -135,28 +144,17 @@ export default function RewardsPage() {
         </div>
       )}
 
-      <div className="grid grid-cols-2 rounded-md bg-muted p-1">
-        {(
-          [
-            ["redeem", "rewards.tabRedeem"],
-            ["milestone", "rewards.tabMilestone"],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={cn(
-              "rounded py-1.5 text-sm font-medium transition-colors",
-              tab === key ? "bg-background shadow-sm" : "text-muted-foreground"
-            )}
-          >
-            {t(label)}
-          </button>
-        ))}
-      </div>
+      <Segmented
+        value={tab}
+        onChange={setTab}
+        options={[
+          { value: "redeem", label: t("rewards.tabRedeem") },
+          { value: "milestone", label: t("rewards.tabMilestone") },
+        ]}
+      />
 
       {showForm && (
-        <form onSubmit={addReward} className="flex flex-col gap-2 rounded-lg border p-3">
+        <form onSubmit={addReward} className="flex flex-col gap-3 rounded-lg border bg-card p-4 shadow-sm">
           <Input
             placeholder={t(tab === "redeem" ? "rewards.redeemPlaceholder" : "rewards.milestonePlaceholder")}
             value={name}
@@ -204,14 +202,16 @@ export default function RewardsPage() {
 
       {tab === "redeem" && (
         <div className="flex flex-col gap-2">
-          {shop.length === 0 && <p className="py-6 text-center text-sm text-muted-foreground">{t("rewards.emptyShop")}</p>}
+          {shop.length === 0 && <EmptyNote art="asciiRabbit">{t("rewards.emptyShop")}</EmptyNote>}
           {shop.map((r) => {
             const affordable = balance >= (r.cost_points ?? 0);
             return (
-              <div key={r.id} className="flex items-center gap-3 rounded-lg border bg-card p-3">
-                <Gift className="h-5 w-5 text-primary" />
+              <div key={r.id} className="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 shadow-sm">
+                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-blush">
+                  <Gift className="h-5 w-5" strokeWidth={1.5} />
+                </span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">{r.name}</p>
+                  <p className="truncate text-[18px] font-medium">{r.name}</p>
                   <p className="text-xs text-muted-foreground">
                     {t("rewards.costLine", { cost: r.cost_points ?? 0, name: nameOf(r.created_by) })}
                   </p>
@@ -231,15 +231,17 @@ export default function RewardsPage() {
       {tab === "milestone" && (
         <div className="flex flex-col gap-2">
           {milestones.length === 0 && (
-            <p className="py-6 text-center text-sm text-muted-foreground">{t("rewards.emptyMilestones")}</p>
+            <EmptyNote art="asciiFawn">{t("rewards.emptyMilestones")}</EmptyNote>
           )}
           {milestones.map((r) => {
             const cond = r.milestone_condition!;
             const unlocks = redemptions.filter((x) => x.reward_id === r.id);
             return (
-              <div key={r.id} className="flex flex-col gap-3 rounded-lg border bg-card p-3">
+              <div key={r.id} className="flex flex-col gap-3 rounded-lg border bg-card px-4 py-3 shadow-sm">
                 <div className="flex items-center gap-3">
-                  <Trophy className="h-5 w-5 text-warning" />
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-kraft">
+                    <Trophy className="h-5 w-5 text-warning" strokeWidth={1.5} />
+                  </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-medium">{r.name}</p>
                     <p className="text-xs text-muted-foreground">{describeMilestone(t, cond)}</p>
@@ -259,9 +261,9 @@ export default function RewardsPage() {
                         <span>{nameOf(p.id)}</span>
                         <span className="text-muted-foreground">{progressLabel(t, cond, value)}</span>
                       </div>
-                      <div className="h-2 overflow-hidden rounded-full bg-muted">
+                      <div className="h-2 overflow-hidden rounded-full bg-blush">
                         <div
-                          className={cn("h-full rounded-full", pct >= 100 ? "bg-success" : "bg-primary")}
+                          className={cn("h-full rounded-full", pct >= 100 ? "bg-success/70" : "bg-rose/60")}
                           style={{ width: `${pct}%` }}
                         />
                       </div>
@@ -276,10 +278,10 @@ export default function RewardsPage() {
 
       {redemptions.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h2 className="text-sm font-semibold text-muted-foreground">{t("rewards.history")}</h2>
+          <SectionTitle>{t("rewards.history")}</SectionTitle>
           <ul className="flex flex-col gap-1 text-sm">
             {redemptions.map((r) => (
-              <li key={r.id} className="flex justify-between gap-2 rounded-md bg-muted/50 px-3 py-2">
+              <li key={r.id} className="flex justify-between gap-2 rounded-sm bg-muted px-3 py-2">
                 <span>
                   {r.period_key ? (
                     <>

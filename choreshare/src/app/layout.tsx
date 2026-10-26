@@ -1,15 +1,19 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Cormorant_Garamond, Courier_Prime, EB_Garamond, Noto_Serif_SC, Pinyon_Script } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/sw-register";
 import { I18nProvider } from "@/components/i18n-provider";
 import { DATE_LOCALE } from "@/lib/i18n/config";
 import { getRequestLocale } from "@/lib/i18n/server";
-import { ThemeProvider } from "@/components/theme-provider";
-import { THEME_COOKIE, THEME_INIT_SCRIPT, isTheme } from "@/lib/theme";
-import { cookies } from "next/headers";
 
-const inter = Inter({ subsets: ["latin"] });
+// Fawnlight type: Cormorant (headings), EB Garamond (body), Courier Prime (labels), Pinyon Script (brand)
+const cormorant = Cormorant_Garamond({ subsets: ["latin"], weight: ["500", "600"], style: ["normal", "italic"], variable: "--font-cormorant" });
+const ebGaramond = EB_Garamond({ subsets: ["latin"], weight: ["400", "500", "600"], style: ["normal", "italic"], variable: "--font-eb-garamond" });
+const courierPrime = Courier_Prime({ subsets: ["latin"], weight: "400", variable: "--font-courier-prime" });
+const pinyon = Pinyon_Script({ subsets: ["latin"], weight: "400", variable: "--font-pinyon" });
+// Chinese fallback; served in unicode-range slices, so no preload
+const notoSerifSC = Noto_Serif_SC({ weight: ["400", "600"], preload: false, variable: "--font-noto-serif-sc" });
+const fontVars = [cormorant, ebGaramond, courierPrime, pinyon, notoSerifSC].map((f) => f.variable).join(" ");
 
 export const metadata: Metadata = {
   title: "ChoreShare",
@@ -26,10 +30,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#7c3aed" },
-    { media: "(prefers-color-scheme: dark)", color: "#0a0a0b" },
-  ],
+  themeColor: "#faf6f3",
 };
 
 export default async function RootLayout({
@@ -38,20 +39,12 @@ export default async function RootLayout({
   children: React.ReactNode;
 }) {
   const locale = await getRequestLocale();
-  const themeCookie = (await cookies()).get(THEME_COOKIE)?.value;
-  const theme = isTheme(themeCookie) ? themeCookie : "system";
   return (
-    // the init script sets the "dark" class before React hydrates
-    <html lang={DATE_LOCALE[locale]} className={theme === "dark" ? "dark" : undefined} suppressHydrationWarning>
-      <head>
-        <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
-      </head>
-      <body className={inter.className}>
-        <ThemeProvider initialTheme={theme}>
-          <I18nProvider locale={locale}>
-            <main className="min-h-screen">{children}</main>
-          </I18nProvider>
-        </ThemeProvider>
+    <html lang={DATE_LOCALE[locale]} className={fontVars}>
+      <body>
+        <I18nProvider locale={locale}>
+          <main className="min-h-screen">{children}</main>
+        </I18nProvider>
         <ServiceWorkerRegister />
       </body>
     </html>

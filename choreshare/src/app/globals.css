@@ -1,59 +1,62 @@
 @import "tailwindcss";
 
-@custom-variant dark (&:is(.dark *));
-
+/*
+ * Fawnlight design system — "Lace" light theme.
+ * https://claude.ai/artifact/LaLDVyPyQcDNXg9tSFPQtN
+ * Rule: 100/200/300 shades are fills behind ink-900 text; 600/700 shades are read directly.
+ * The deep rose-600 is kept for small text and focus rings only; fills stay soft.
+ */
 :root {
-  --background: hsl(0 0% 100%);
-  --foreground: hsl(240 10% 3.9%);
-  --card: hsl(0 0% 100%);
-  --card-foreground: hsl(240 10% 3.9%);
-  --primary: hsl(262 83% 58%);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(240 4.8% 95.9%);
-  --secondary-foreground: hsl(240 5.9% 10%);
-  --muted: hsl(240 4.8% 95.9%);
-  --muted-foreground: hsl(240 3.8% 46.1%);
-  --accent: hsl(240 4.8% 95.9%);
-  --accent-foreground: hsl(240 5.9% 10%);
-  --destructive: hsl(0 84.2% 60.2%);
-  --destructive-foreground: hsl(0 0% 98%);
-  --success: hsl(142 71% 40%);
-  --warning: hsl(38 92% 50%);
-  --attention: hsl(21 90% 48%); /* needs your action: review, owed rewards */
-  --info: hsl(221 83% 53%); /* in progress */
-  --border: hsl(240 5.9% 90%);
-  --input: hsl(240 5.9% 90%);
-  --ring: hsl(262 83% 58%);
-  --radius: 0.625rem;
-  /* chart series: me / partner (validated categorical slots 1–2) */
-  --series-me: #2a78d6;
-  --series-partner: #eb6834;
-}
+  /* Fawnlight palette */
+  --paper: #faf6f3;
+  --paper-raised: #fffdfb;
+  --blush-100: #f7e9ea;
+  --blush-200: #efd6da;
+  --rose-300: #e3b6c0;
+  --rose-400: #d9a3b0; /* hover for rose-300 fills */
+  --rose-600: #9a5068;
+  --ink-900: #4a3530;
+  --ink-600: #7a5f58;
+  --sepia-400: #a77a6b;
+  --line-200: #eadcd8;
+  --line-400: #a48780;
+  --silver-200: #ecebef;
+  --silver-400: #bdb8c2;
+  --kraft-300: #f0e3d2;
+  --sage-300: #e1e7da;
+  --sage-700: #55694d;
+  --honey-700: #6e5220;
+  --danger-100: #f6e0e3;
+  --danger-600: #a63b4c;
 
-.dark {
-  --background: hsl(240 10% 3.9%);
-  --foreground: hsl(0 0% 98%);
-  --card: hsl(240 6% 9%);
-  --card-foreground: hsl(0 0% 98%);
-  --primary: hsl(262 83% 63%);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(240 3.7% 15.9%);
-  --secondary-foreground: hsl(0 0% 98%);
-  --muted: hsl(240 3.7% 15.9%);
-  --muted-foreground: hsl(240 5% 64.9%);
-  --accent: hsl(240 3.7% 15.9%);
-  --accent-foreground: hsl(0 0% 98%);
-  --destructive: hsl(0 72% 58%);
-  --destructive-foreground: hsl(0 0% 98%);
-  --success: hsl(142 60% 48%);
-  --warning: hsl(38 92% 55%);
-  --attention: hsl(27 96% 61%);
-  --info: hsl(213 94% 68%);
-  --border: hsl(240 3.7% 18%);
-  --input: hsl(240 3.7% 15.9%);
-  --ring: hsl(262 83% 63%);
-  --series-me: #3987e5;
-  --series-partner: #d95926;
+  /* semantic tokens used by the app */
+  --background: var(--paper);
+  --foreground: var(--ink-900);
+  --card: var(--paper-raised);
+  --card-foreground: var(--ink-900);
+  --primary: var(--rose-300);
+  --primary-hover: var(--rose-400);
+  --primary-foreground: var(--ink-900);
+  --rose: var(--rose-600);
+  --secondary: var(--blush-200);
+  --secondary-foreground: var(--ink-900);
+  --muted: var(--blush-100);
+  --muted-foreground: var(--ink-600);
+  --accent: var(--blush-100);
+  --accent-foreground: var(--ink-900);
+  --destructive: var(--danger-600);
+  --destructive-foreground: #ffffff;
+  --success: var(--sage-700);
+  --warning: var(--honey-700);
+  --attention: var(--rose-600); /* needs your action: review, owed rewards */
+  --info: var(--ink-600);
+  --border: var(--line-200);
+  --input: var(--line-400);
+  --ring: var(--rose-600);
+  /* chart series: me / partner */
+  --series-me: #d4909f;
+  --series-partner: #93a886;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -62,7 +65,9 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-foreground: var(--primary-foreground);
+  --color-rose: var(--rose);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
@@ -80,9 +85,39 @@
   --color-ring: var(--ring);
   --color-series-me: var(--series-me);
   --color-series-partner: var(--series-partner);
-  --radius-lg: var(--radius);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-sm: calc(var(--radius) - 4px);
+  /* status / tag fills (pair with ink-900 text) */
+  --color-blush: var(--blush-200);
+  --color-kraft: var(--kraft-300);
+  --color-sage: var(--sage-300);
+  --color-silver: var(--silver-200);
+  --color-danger-soft: var(--danger-100);
+  --color-sepia: var(--sepia-400);
+
+  --font-sans: var(--font-eb-garamond), var(--font-noto-serif-sc), "Songti SC", Georgia, serif;
+  --font-serif: var(--font-cormorant), var(--font-noto-serif-sc), "Songti SC", Georgia, serif;
+  --font-script: var(--font-pinyon), cursive;
+  --font-mono: var(--font-courier-prime), "Courier New", monospace;
+
+  /* Garamond runs small; keep UI copy readable */
+  --text-xs: 13px;
+  --text-xs--line-height: 18px;
+  --text-sm: 15px;
+  --text-sm--line-height: 22px;
+  --text-base: 17px;
+  --text-base--line-height: 26px;
+
+  /* xs: tags · sm: inputs · md/lg: cards · xl/2xl: modals · full: buttons, pills */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 14px;
+  --radius-xl: 24px;
+  --radius-2xl: 24px;
+
+  --shadow-sm: 0 1px 2px rgba(74, 53, 48, 0.08);
+  --shadow-md: 0 10px 30px rgba(154, 80, 104, 0.14);
+  --shadow-lg: 0 10px 30px rgba(154, 80, 104, 0.14);
+  --shadow-xl: 0 10px 30px rgba(154, 80, 104, 0.14);
 }
 
 @layer base {
@@ -90,6 +125,108 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased;
+    @apply bg-background font-sans text-base text-foreground antialiased;
+  }
+  h1,
+  h2,
+  h3 {
+    @apply font-serif;
+  }
+  :focus-visible {
+    outline-color: var(--ring);
+  }
+}
+
+@layer components {
+  /* scalloped lace hem under a card (Fawnlight Card --lace) */
+  .fl-lace {
+    position: relative;
+    margin-bottom: 14px;
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    --lace-fill: var(--paper-raised);
+    --lace-line: var(--line-200);
+  }
+  .fl-lace::after {
+    content: "";
+    position: absolute;
+    left: -1px;
+    right: -1px;
+    top: 100%;
+    height: 13px;
+    background: radial-gradient(
+        circle at 12px 0,
+        var(--lace-fill) 10.5px,
+        var(--lace-line) 11px,
+        var(--lace-line) 12px,
+        transparent 12.5px
+      )
+      0 0 / 24px 13px repeat-x;
+  }
+  .fl-lace::before {
+    content: "";
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    bottom: 6px;
+    height: 4px;
+    background: radial-gradient(circle, var(--rose-300) 1.4px, transparent 1.8px) 0 0 / 12px 4px repeat-x;
+  }
+  .fl-lace-blush {
+    background-color: var(--blush-100);
+    border-color: var(--blush-200);
+    --lace-fill: var(--blush-100);
+    --lace-line: var(--blush-200);
+  }
+
+  /* ruled letter paper (Fawnlight Note) */
+  .fl-note {
+    position: relative;
+    padding: 12px 20px 14px 48px;
+    background-color: var(--blush-100);
+    background-image: repeating-linear-gradient(
+      to bottom,
+      transparent 0,
+      transparent 27px,
+      var(--line-200) 27px,
+      var(--line-200) 28px
+    );
+    background-position: 0 12px;
+    border-radius: var(--radius-xs);
+    box-shadow: var(--shadow-sm);
+    line-height: 28px;
+  }
+  .fl-note::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 34px;
+    width: 1px;
+    background: var(--rose-300);
+  }
+
+  /* lace line with eyelets (Fawnlight Divider) */
+  .fl-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .fl-divider::before,
+  .fl-divider::after {
+    content: "";
+    flex: 1;
+    height: 5px;
+    background:
+      linear-gradient(var(--line-200), var(--line-200)) 0 0 / 100% 1px no-repeat,
+      radial-gradient(circle, var(--sepia-400) 1.2px, transparent 1.6px) 0 2px / 8px 3px repeat-x;
+  }
+
+  /* blush scalloped trim with eyelets, e.g. under the header */
+  .fl-trim {
+    height: 10px;
+    background:
+      radial-gradient(circle at 50% 2px, var(--paper) 1.5px, transparent 2px) 0 0 / 20px 10px repeat-x,
+      radial-gradient(circle at 10px 0, var(--blush-200) 9.5px, transparent 10px) 0 0 / 20px 10px repeat-x;
   }
 }

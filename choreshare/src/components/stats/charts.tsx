@@ -10,7 +10,8 @@ const TOOLTIP_STYLE = {
   background: "var(--card)",
   border: "1px solid var(--border)",
   borderRadius: 8,
-  fontSize: 12,
+  fontSize: 13,
+  fontFamily: "var(--font-sans)",
   color: "var(--foreground)",
 };
 
@@ -96,17 +97,17 @@ export function Meter({ value, label }: { value: number | null; label: string })
   return (
     <div className="flex flex-col gap-2">
       <div className="flex items-baseline justify-between">
-        <span className="text-3xl font-bold tabular-nums">{value === null ? "—" : `${value}%`}</span>
+        <span className="font-serif text-[40px] font-medium leading-[46px] lining-nums tabular-nums">{value === null ? "—" : `${value}%`}</span>
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
       <div
-        className="h-2.5 overflow-hidden rounded-full bg-primary/15"
+        className="h-2.5 overflow-hidden rounded-full bg-blush"
         role="meter"
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={value ?? 0}
       >
-        <div className="h-full rounded-full bg-primary" style={{ width: `${value ?? 0}%` }} />
+        <div className="h-full rounded-full bg-series-me" style={{ width: `${value ?? 0}%` }} />
       </div>
     </div>
   );

@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Heart } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input, Label } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
+import { Segmented } from "@/components/ui/segmented";
+import { Art } from "@/components/fawn";
 import { useI18n } from "@/components/i18n-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
 import { translateError } from "@/lib/i18n/errors";
@@ -59,31 +60,24 @@ export function LoginForm({ confirmError }: { confirmError: boolean }) {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 p-4">
-      <div className="flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2">
-          <Heart className="h-8 w-8 text-primary" fill="currentColor" />
-          <h1 className="text-3xl font-bold tracking-tight">ChoreShare</h1>
-        </div>
-        <p className="text-muted-foreground">{t("login.tagline")}</p>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-5 p-4">
+      <div className="flex flex-col items-center">
+        <Art name="rabbit" className="w-28" priority />
+        <h1 className="-mt-2 font-script text-[64px] font-normal leading-[72px]">ChoreShare</h1>
+        <p className="font-serif text-lg italic text-muted-foreground">{t("login.tagline")}</p>
       </div>
 
-      <Card className="w-full max-w-sm">
-        <CardContent className="pt-4">
-          <div className="mb-4 grid grid-cols-2 rounded-md bg-muted p-1">
-            {(["login", "signup"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => setMode(m)}
-                className={`rounded py-1.5 text-sm font-medium transition-colors ${
-                  mode === m ? "bg-background shadow-sm" : "text-muted-foreground"
-                }`}
-              >
-                {m === "login" ? t("login.login") : t("login.signup")}
-              </button>
-            ))}
-          </div>
+      <Card lace className="w-full max-w-sm">
+        <CardContent className="pt-5">
+          <Segmented
+            className="mb-5"
+            value={mode}
+            onChange={setMode}
+            options={[
+              { value: "login", label: t("login.login") },
+              { value: "signup", label: t("login.signup") },
+            ]}
+          />
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             {mode === "signup" && (
@@ -110,7 +104,7 @@ export function LoginForm({ confirmError }: { confirmError: boolean }) {
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             {info && <p className="text-sm text-success">{info}</p>}
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" className="mt-1" disabled={loading}>
               {loading ? t("common.pleaseWait") : mode === "login" ? t("login.login") : t("login.signup")}
             </Button>
           </form>
