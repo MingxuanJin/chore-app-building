@@ -138,3 +138,28 @@ export interface UserPoints {
   total_spent: number;
   balance: number;
 }
+
+export type NotificationType =
+  | "task_assigned"
+  | "task_claimed"
+  | "task_submitted"
+  | "task_approved"
+  | "task_rejected"
+  | "reward_redeemed"
+  | "milestone_unlocked"
+  | "reward_fulfilled"
+  | "shopping_assigned";
+
+export interface AppNotification {
+  id: string;
+  family_id: string;
+  recipient_id: string;
+  actor_id: string | null;
+  type: NotificationType;
+  task_id: string | null;
+  reward_id: string | null;
+  // user: who redeemed / unlocked (may differ from actor for milestones)
+  data: { title?: string; name?: string; points?: number; comment?: string | null; user?: string };
+  read_at: string | null;
+  created_at: string;
+}
