@@ -90,7 +90,7 @@ export function NotificationsProvider({ children }: { children: React.ReactNode 
 function ToastIcon({ type }: { type: AppNotification["type"] }) {
   const Icon = NOTIFICATION_ICON[type];
   return (
-    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-foreground">
+    <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-primary text-primary-foreground">
       <Icon className="h-4 w-4" />
     </span>
   );

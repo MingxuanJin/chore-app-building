@@ -207,7 +207,7 @@ ShoppingItem { id, family_id, name, added_by, assigned_to,
 
 ---
 
-## 开发进度与交接（截至 2026-10-26）
+## 开发进度与交接（截至 2026-10-27）
 
 > 给下一次对话：先读这一节，就能接着做。
 
@@ -222,7 +222,9 @@ ShoppingItem { id, family_id, name, added_by, assigned_to,
 1. **手机推送尚未在真机上验证收发**：线上 `/api/push` 已验证可用（3 个环境变量都已生效）。若收不到，在 Supabase SQL Editor 查 `select status_code, content from net._http_response order by created desc limit 5;`
 2. **pg_cron 是否启用未确认**：007 迁移已运行，但没确认有没有出现 `pg_cron not available` 提示。没有 pg_cron 时，「每小时自动生成重复任务」不生效，打开 App 时生成的逻辑照常工作。可在 SQL Editor 查 `select * from cron.job;` 确认。
 3. 换成 Fawnlight 风格后，登录后的各个页面、CSV 导出文件，尚待使用者检查。
-4. Android 原生包装（Capacitor）：先用 PWA，体验不够再做。
+4. 新增的两个布丁主题（2026-10-27）：登录页和一个临时组件预览页（首页卡片、任务卡片、统计图、表单、全部小图）已截图验证；真实登录后的各页面待使用者在两个主题下检查。
+5. 布丁主题字体：英文 / 意大利文用 Nunito（正文）+ Fredoka（标题），中文用站酷快乐体（布丁布丁给 Allseto 的回退字体）。使用者反馈只用快乐体时英文不好读，所以拉丁字母换成了圆体无衬线。设计系统的「全瀨體 Allseto」（4.3 MB）没放进项目。
+6. Android 原生包装（Capacitor）：先用 PWA，体验不够再做。
 
 ### 数据库迁移（全部已在 Supabase 运行）
 
@@ -257,11 +259,16 @@ ShoppingItem { id, family_id, name, added_by, assigned_to,
 - **通知**：新增类型需要同时改 ① 数据库触发器 ② `types/database.ts` 的 `NotificationType` ③ `lib/notifications.ts` 的图标 ④ 三个字典的 `notifications.*`。推送文案和站内文案共用同一套渲染。
 - **颜色**：使用语义色变量（`primary` / `success` / `warning` / `attention` / `info` / `destructive`，定义在 `app/globals.css`，取值来自 Fawnlight 色板），不要写死 `orange-600` 这类颜色。图表的两人配色是 `--series-me`（玫瑰粉 primary-600）/ `--series-partner`（薰衣草紫 lavender-700），已用色弱校验。
 - **视觉风格**：遵循使用者在 Claude 里建的 design system **Fawnlight**（https://claude.ai/artifact/LaLDVyPyQcDNXg9tSFPQtN，蕾丝、百合、小动物的「纪念品」风）。改动前先读它的 README，它会更新。
-  - 只用浅色「Lace 蕾丝白」主题（Fawnlight 也有深色「Candlelight 烛光」，App 暂不启用）。
+  - Fawnlight 只用浅色「Lace 蕾丝白」（它的深色「Candlelight 烛光」App 不启用）。
   - 使用者**不喜欢大面积的深玫瑰色**：按钮等填充用 `rose-300`（`bg-primary`，配 ink 文字）；深色 `rose-600`（`text-rose`）只用于小字、焦点环。
   - 字体：标题 Cormorant Garamond（`font-serif`，h1–h3 自动），正文 EB Garamond（`font-sans`），标签/日期 Courier Prime（`font-mono`），品牌花体 Pinyon Script（`font-script`，只写英文、≥28px），中文回退 Noto Serif SC。数字用 `lining-nums tabular-nums`。
   - 组件：按钮是胶囊形；卡片可加 `lace`（底部扇贝蕾丝）/`blush`（雾粉底）；状态标签是打字机字体＋浅色底；`components/fawn.tsx` 提供 `Art`（装饰素材）、`PageHeader`、`SectionTitle`、`LaceDivider`、`EmptyNote`；`ui/segmented.tsx` 是分段切换。
   - 装饰素材在 `public/fawnlight/`（从 design system 导出转成 webp）。规则：一屏一个主角（小动物或小物），同屏最多四件素材，不用 emoji。页面上方的英文小标在字典的 `deco.*`（三种语言相同）。
+- **主题**（2026-10-27）：设置页可切换三套主题，按设备保存在 cookie `theme`，根布局把它渲染成 `<html data-theme>`（不闪烁）。`fawnlight`＝蕾丝白（默认）；`caramel`＝焦糖布丁、`cocoa`＝可可布丁，分别是使用者的 design system **布丁布丁**（https://claude.ai/artifact/4CbjiYCvtai3tkuyn7oFFj）的日 / 暗模式。
+  - 实现：`globals.css` 里布丁主题把 Fawnlight 色板变量（`--paper`、`--blush-*`、`--rose-*`、`--ink-*` …）和语义色改指向布丁色板；字体、圆角、阴影走 `--app-font-*` / `--app-radius-*` / `--app-shadow-*`，按主题切换。所以组件照常只写语义色 / Fawnlight 色名，**不要写死颜色**，新加的填充色在可可布丁（深色）下也要能配 `text-foreground`。
+  - 布丁主题的组件差异写在 `globals.css` 末尾（不分 layer）：实心按钮（`btn-solid`）有 3D 底影、按下下沉；`fl-lace` 变波点卡片，`fl-note` 变虚线卡片，分隔线变虚线，页头花边变奶黄点点带；只有一个字重，关掉了假粗体 / 假斜体。只在布丁主题生效的样式可用 Tailwind 变体 `pudding:`。
+  - 装饰图：`Art` 在布丁主题下按 `fawn.tsx` 的 `PUDDING_ART` 换成 `components/pudding-motifs.tsx` 里的 SVG 小图（兔耳布丁、双布丁、打蛋器、煎蛋、茶杯、樱桃、星星饼干、牛奶瓶、勺子、盘子、焦糖淋面、爪印），每个页面各不相同；其中布丁和爪印来自设计系统，其余是按同一画风原创的。布丁布丁里的布丁狗 / 像素素材是三丽鸥版权；使用者 2026-10-27 决定不加（仓库公开），**不要放进项目**。
+  - 新加主题：`lib/theme/config.ts` 的 `THEMES` / `THEME_COLOR`、`globals.css`、`theme-switcher.tsx` 的色样、三个字典的 `settings.theme*`。
 - **语言**：`profiles.locale` > cookie `locale` > 浏览器语言 > 英文。
 - **服务端入口**：`proxy.ts`（Next 16 的 middleware）会把未登录用户重定向到 `/login`，公开路径为 `/login`、`/auth/*`、`/api/push`。
 - **验证**：每次改动后跑 `npx tsc --noEmit && npx eslint . && npm run build`（在 `choreshare/` 目录下）。
@@ -274,4 +281,5 @@ ShoppingItem { id, family_id, name, added_by, assigned_to,
 - 统计页：完成率用进度条、难度分布用分组柱状图（没用 PRD 原写的环形图 / 饼图，以便看清公平性）。
 - 语言和推送按人设置。
 - 2026-10-26：整体视觉改为 Fawnlight，去掉了深色模式和文案里的 emoji。
+- 2026-10-27：新增焦糖布丁 / 可可布丁两个主题，按设备选择（没用数据库，不需要迁移）。两人图表配色按使用者要求只用布丁布丁色板：焦糖布丁是 caramel `#8a5a3b` / custard-shadow `#d8b44e`，可可布丁是 caramel-shadow `#8e6343` / custard `#f2d675`，靠明暗区分（色弱也能分清）；浅色那个和底色对比偏低，靠图例和悬停提示补足。
 - 2026-10-26：App 改名 BunnyChore；图标是 Fawnlight 的蕾丝杯垫框加小白兔（`public/icons/`）。代码目录仍叫 `choreshare/`（Vercel 的 Root Directory 指向它），已运行的迁移文件注释里的旧名不改。

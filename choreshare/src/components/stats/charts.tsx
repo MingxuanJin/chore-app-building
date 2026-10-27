@@ -11,7 +11,7 @@ const TOOLTIP_STYLE = {
   border: "1px solid var(--border)",
   borderRadius: 8,
   fontSize: 13,
-  fontFamily: "var(--font-sans)",
+  fontFamily: "var(--app-font-body)",
   color: "var(--foreground)",
 };
 
@@ -101,7 +101,7 @@ export function Meter({ value, label }: { value: number | null; label: string })
         <span className="text-xs text-muted-foreground">{label}</span>
       </div>
       <div
-        className="h-2.5 overflow-hidden rounded-full bg-blush"
+        className="h-2.5 overflow-hidden rounded-full bg-blush pudding:bg-muted"
         role="meter"
         aria-valuemin={0}
         aria-valuemax={100}

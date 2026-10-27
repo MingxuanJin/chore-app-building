@@ -11,6 +11,7 @@ import { useFamily } from "@/components/family-provider";
 import { useI18n } from "@/components/i18n-provider";
 import { PageHeader } from "@/components/fawn";
 import { LanguageSwitcher } from "@/components/language-switcher";
+import { ThemeSwitcher } from "@/components/theme-switcher";
 import { PushToggle } from "@/components/push-toggle";
 import { DataExport } from "@/components/data-export";
 
@@ -55,6 +56,15 @@ export default function SettingsPage() {
         </CardContent>
       </Card>
 
+      <Card>
+        <CardHeader>
+          <CardTitle>{t("settings.theme")}</CardTitle>
+          <p className="text-xs text-muted-foreground">{t("settings.themeHint")}</p>
+        </CardHeader>
+        <CardContent>
+          <ThemeSwitcher />
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader>

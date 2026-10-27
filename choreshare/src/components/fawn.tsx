@@ -1,5 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import { cn } from "@/lib/utils";
+import { isPudding } from "@/lib/theme/config";
+import { useTheme } from "./theme-provider";
+import { Motif, type MotifName } from "./pudding-motifs";
 
 /*
  * Fawnlight ornaments (assets from the design system, in /public/fawnlight).
@@ -24,8 +29,33 @@ const ART = {
 
 export type ArtName = keyof typeof ART;
 
+/*
+ * 布丁布丁 themes swap each Fawnlight ornament for its own pudding motif, so every screen keeps a different one.
+ */
+const PUDDING_ART: Record<ArtName, MotifName | null> = {
+  rabbit: "bunnyPudding", // login
+  asciiFawn: "twinPuddings", // home
+  lily: "whisk", // tasks, setup
+  lilyPetal: "egg", // new / edit task
+  angelBunny: "teacup", // settings
+  clock: "cherry", // notifications
+  piano: "cookie", // rewards
+  asciiRabbit: "milk", // shopping, empty lists
+  asciiLily: "spoon", // stats, empty lists
+  bow: "pudding", // header logo, milestone popup
+  doily: "plate",
+  swag: "drizzle",
+  star: "paw",
+  garland: null,
+};
+
 /** A decorative ornament; size it with a width class (height follows). */
 export function Art({ name, className, priority }: { name: ArtName; className?: string; priority?: boolean }) {
+  const { theme } = useTheme();
+  if (isPudding(theme)) {
+    const motif = PUDDING_ART[name];
+    return motif && <Motif name={motif} className={className} />;
+  }
   const a = ART[name];
   return (
     <Image
@@ -86,6 +116,8 @@ export function SectionTitle({ children, count, className }: { children: React.R
 
 /** Lace divider with an ornament or a short script word in the middle. */
 export function LaceDivider({ art = "bow", word }: { art?: ArtName; word?: string }) {
+  const { theme } = useTheme();
+  if (isPudding(theme) && art === "bow") art = "star"; // paw print between dashed lines
   return (
     <div className="fl-divider" aria-hidden>
       {word ? (

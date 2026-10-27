@@ -63,7 +63,7 @@ export function LoginForm({ confirmError }: { confirmError: boolean }) {
     <div className="flex min-h-screen flex-col items-center justify-center gap-5 p-4">
       <div className="flex flex-col items-center">
         <Art name="rabbit" className="w-28" priority />
-        <h1 className="-mt-2 font-script text-[64px] font-normal leading-[72px]">BunnyChore</h1>
+        <h1 className="-mt-2 font-script text-[64px] font-normal leading-[72px] pudding:mt-1 pudding:text-[44px] pudding:leading-[52px]">BunnyChore</h1>
         <p className="font-serif text-lg italic text-muted-foreground">{t("login.tagline")}</p>
       </div>
 

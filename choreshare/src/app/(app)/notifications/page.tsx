@@ -51,7 +51,7 @@ export default function NotificationsPage() {
                   <span
                     className={cn(
                       "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                      n.read_at ? "bg-muted" : "bg-primary text-foreground"
+                      n.read_at ? "bg-muted" : "bg-primary text-primary-foreground"
                     )}
                   >
                     <Icon className="h-4 w-4" />

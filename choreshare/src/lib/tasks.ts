@@ -6,7 +6,7 @@ export const STATUS_STYLE: Record<TaskStatus, string> = {
   pending: "bg-kraft",
   claimed: "bg-blush",
   in_progress: "bg-silver",
-  review: "bg-primary",
+  review: "bg-primary text-primary-foreground",
   completed: "bg-sage",
   rejected: "bg-danger-soft text-destructive",
 };

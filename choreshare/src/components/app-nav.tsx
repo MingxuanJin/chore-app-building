@@ -37,7 +37,7 @@ export function AppHeader() {
           >
             <Bell className="h-5 w-5" />
             {unread > 0 && (
-              <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose px-1 font-mono text-[10px] text-white">
+              <span className="absolute right-0.5 top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-rose px-1 font-mono text-[10px] text-rose-foreground">
                 {unread > 99 ? "99+" : unread}
               </span>
             )}
