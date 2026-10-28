@@ -61,6 +61,7 @@
   - 存成一条已结束的计时段（`ended_at` = 提交时刻，`started_at` 往前推所填时长，`actual_minutes` = 所填分钟，`is_manual = true`），积分、统计、导出都和计时一样算。
   - 任务记录里显示「手动记录」，让确认的一方知道这段时间是填的。
   - 正在计时的任务不提供手动填写。
+  - 从待认领直接手动填写时，对方只收到一条「已提交待确认」通知（009）。
 
 ### 4. 数据统计
 
@@ -245,6 +246,7 @@ ShoppingItem { id, family_id, name, added_by, assigned_to,
 | `006_push.sql` | `push_subscriptions`、私有配置表 `app_config`；通知插入触发 `pg_net` 调用 `/api/push` |
 | `007_recurring_schedule.sql` | `tasks.series_id`、`families.timezone`；`generate_recurring_tasks()` 按周期生成实例 + `task_due` 通知；`sync_recurring_tasks(tz)` 供 App 打开时调用；pg_cron 每小时运行（当地 7 点后）；`review_task` 不再在确认时生成下一次 |
 | `008_manual_time.sql` | `task_sessions.is_manual`：标记手动填写的用时 |
+| `009_merge_claim_submit_notification.sql` | `tasks_notify()`：认领和提交在同一次更新里发生时（待认领任务直接手动填写用时），只发「已提交」一条通知 |
 
 ### 环境变量 / 密钥
 
