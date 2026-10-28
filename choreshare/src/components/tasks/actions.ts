@@ -41,6 +41,29 @@ export async function resumeSession(session: TaskSession) {
     .eq("id", session.id);
 }
 
+/** Longest manual entry, in minutes (a whole day) */
+export const MAX_MANUAL_MINUTES = 24 * 60;
+
+/**
+ * Log time typed in by hand and send the task for review. Stored as a finished session
+ * ending now, so points, stats and export treat it like timed work.
+ */
+export async function logManualTime(taskId: string, userId: string, minutes: number) {
+  const supabase = createClient();
+  const end = new Date();
+  const start = new Date(end.getTime() - minutes * 60_000);
+  const { error } = await supabase.from("task_sessions").insert({
+    task_id: taskId,
+    user_id: userId,
+    started_at: start.toISOString(),
+    ended_at: end.toISOString(),
+    actual_minutes: minutes,
+    is_manual: true,
+  });
+  if (error) return { error };
+  return supabase.from("tasks").update({ status: "review", assigned_to: userId }).eq("id", taskId);
+}
+
 /** End the running session (if any) and send the task to the partner for review. */
 export async function submitTask(taskId: string, session: TaskSession | null) {
   const supabase = createClient();

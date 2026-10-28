@@ -3,7 +3,7 @@
 import { use, useCallback, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CalendarDays, Check, Clock, Pause, Pencil, Play, Repeat, Send, Trash2, User, X } from "lucide-react";
+import { CalendarDays, Check, Clock, Keyboard, Pause, Pencil, Play, Repeat, Send, Trash2, User, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useLiveQuery } from "@/lib/supabase/realtime";
 import type { Task, TaskReview, TaskSession } from "@/types/database";
@@ -23,11 +23,14 @@ import { useFamily } from "@/components/family-provider";
 import { useI18n } from "@/components/i18n-provider";
 import { LaceDivider, SectionTitle } from "@/components/fawn";
 import { translateError } from "@/lib/i18n/errors";
+import { cn } from "@/lib/utils";
 import { DifficultyStars } from "@/components/tasks/difficulty";
 import { TimerDisplay } from "@/components/tasks/timer";
+import { ManualTimeForm } from "@/components/tasks/manual-time";
 import {
   claimTask,
   deleteTask,
+  logManualTime,
   pauseSession,
   resumeSession,
   reviewTask,
@@ -46,6 +49,7 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const [error, setError] = useState<string | null>(null);
   const [comment, setComment] = useState("");
   const [rejecting, setRejecting] = useState(false);
+  const [manual, setManual] = useState(false);
 
   const fetchTask = useCallback(async () => {
     const supabase = createClient();
@@ -75,6 +79,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
   const active = sessions.find((s) => !s.ended_at) ?? null;
   const totalMinutes = sessions.reduce((sum, s) => sum + sessionSeconds(s), 0) / 60;
   const latestReview = reviews[0];
+  // typing the time in is offered whenever you could start the timer
+  const canLogManually =
+    task.status === "pending" || ((task.status === "claimed" || task.status === "rejected") && isMine);
+  const manualOpen = manual && canLogManually;
   const due = dueLabel(t, dateLocale, task.due_date);
 
   return (
@@ -136,7 +144,26 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
           <TimerDisplay sessions={sessions} />
           {task.status === "in_progress" && active?.paused_at && <p className="text-sm text-muted-foreground">{t("taskDetail.paused")}</p>}
 
-          <div className="flex w-full flex-col gap-2">
+          {manualOpen && (
+            <div className="w-full">
+              <ManualTimeForm
+                difficulty={task.difficulty}
+                priorMinutes={totalMinutes}
+                partnerName={partnerName}
+                busy={busy}
+                onCancel={() => setManual(false)}
+                onSubmit={(minutes) =>
+                  run(async () => {
+                    const res = await logManualTime(task.id, me.id, minutes);
+                    if (!res.error) setManual(false);
+                    return res;
+                  })
+                }
+              />
+            </div>
+          )}
+
+          <div className={cn("flex w-full flex-col gap-2", manualOpen && "hidden")}>
             {task.status === "pending" && (
               <>
                 <Button size="lg" disabled={busy} onClick={() => run(() => claimTask(task.id, me.id))}>
@@ -156,6 +183,12 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               ) : (
                 <p className="text-center text-sm text-muted-foreground">{t("taskDetail.waitingStart", { name: nameOf(task.assigned_to) })}</p>
               ))}
+
+            {canLogManually && (
+              <Button variant="ghost" disabled={busy} onClick={() => setManual(true)}>
+                <Keyboard /> {t("taskDetail.manualEntry")}
+              </Button>
+            )}
 
             {task.status === "in_progress" &&
               (isMine ? (
@@ -252,7 +285,10 @@ export default function TaskDetailPage({ params }: { params: Promise<{ id: strin
               ...sessions.map((s) => ({
                 at: s.started_at,
                 text: s.ended_at
-                  ? t("taskDetail.logTimed", { name: nameOf(s.user_id), duration: formatMinutes(t, sessionSeconds(s) / 60) })
+                  ? t(s.is_manual ? "taskDetail.logManual" : "taskDetail.logTimed", {
+                      name: nameOf(s.user_id),
+                      duration: formatMinutes(t, sessionSeconds(s) / 60),
+                    })
                   : t("taskDetail.logStarted", { name: nameOf(s.user_id) }),
               })),
               ...reviews.map((r) => ({

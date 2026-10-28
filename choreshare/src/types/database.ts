@@ -62,6 +62,8 @@ export interface TaskSession {
   ended_at: string | null;
   paused_duration_seconds: number;
   actual_minutes: number | null;
+  /** time typed in by hand instead of timed */
+  is_manual: boolean;
 }
 
 export interface TaskReview {
